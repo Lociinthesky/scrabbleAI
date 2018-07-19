@@ -1,0 +1,1 @@
+This is the repo for a scrabble-like app, built with an eye on time and space complexity, with multiplayer functionality and an AI that gets the maximum number of points on every turn.
