@@ -57,7 +57,7 @@ function buildAnagramHashAndAncestryHash(tree, hand) {
 
 function specialQuery(prefixLength, suffix) {
   let treesWithSuffix = [];
-  function checkSuffix(tree, suffix) {
+  function stringSuffix(tree, suffix) {
 	let wordsWithThisSuffix = [];
 	for ( let c of suffix ) {
 		if ( tree[c] ) {
@@ -72,7 +72,53 @@ function specialQuery(prefixLength, suffix) {
 
   }
 }
+function consolidateAnagrams(maxLength) {
+	let anagrams = [];
+	for ( let i = 0; i <= maxLength; i++ ) {
+		anagrams.concat(anagramsByLength[i]);
+	}
+	return anagrams;
+}
+function traverseByCharacter(tree, letters) {
+	letters = [...letters];
+	for ( let c of arr ) {
+		if ( tree[c] ) tree = tree[c]
+		else return;
+	}
+	return tree;
+}
+function getWordsForSpace(...parameters) {
+	let viableWords = [];
+	let viableTrees = [];
+	let firstArgument = true;
+	while ( parameters.length ) {
+		var arg = parameters.shift();
+		if ( Array.isArray(arg) ) {
+			if ( firstArgument ) {
+				firstArgument = false;
+				viableWords.concat(consolidateAnagrams(arg[0]));
+			}
 
+		} else if ( typeof arg === 'string' ) {
+			if ( firstArgument ) {
+				firstArgument = false;
+				viableTrees.push(traverseByCharacter(tree, arg));
+			} else {
+				let newViableTrees = [];
+				for ( let tree of viableTrees ) {
+					newViableTrees.push(traverseByCharacter(tree, arg));
+				}
+				
+			}
+			
+		} else { //then arg is a number; it is glue
+			if ( firstArgument ) {
+				firstArgument = false;
+				viableTrees.push(...an)
+			}
+		}
+	}
+}
 
 var dictree = buildDictree(dict, alphabet);
 var { anagramsByLength, ancestriesByLength } = buildAnagramHashAndAncestryHash(dictree, 'sampler')
