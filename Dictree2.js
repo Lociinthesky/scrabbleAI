@@ -23,14 +23,21 @@ function buildDictree(dict, alphabet) {
   return new Dictree();
 }
 
-function rm(char, arr) {
+function excise(char, arr) {
 	const idx = arr.indexOf(char);
 	return arr.slice(0,idx).concat(arr.slice(idx+1));
 }
 
-function queryTree(tree, substr, anagrams, ancestors) {
+function queryTree(tree, substr, anagrams, ancestors, anagramsByIndex) {
 	if (tree.value) { 
 		anagrams[tree.depth].push(tree.value);
+		for ( let i = 1; i < tree.depth; i++ ) {
+			if ( anagramsByIndex[i][tree.value[i]] === undefined ) {
+				anagramsByIndex[i][tree.value[i]] = [tree.value];
+			} else {
+				anagramsByIndex[i][tree.value[i]].push(tree.value)
+			}
+		}
 	}
 	ancestors[tree.depth].push({tree, substr});
 	if ( substr.length === 0 ) return;
@@ -39,21 +46,23 @@ function queryTree(tree, substr, anagrams, ancestors) {
 		if (memoizer.includes(char)) continue;
 		else memoizer.push(char);
 		if ( tree[char] ) {
-			queryTree(tree[char], rm(char,substr), anagrams, ancestors)
+			queryTree(tree[char], excise(char,substr), anagrams, ancestors, anagramsByIndex)
 		}		
 	}
 }
 
 function buildAnagramHashAndAncestryHash(tree, hand) {
 	let anagramsByLength = {};
+	let anagramsByIndex = {};
 	let ancestriesByLength = {};
 	for ( let i = 0; i < 9; i++ ) {
 		anagramsByLength[i] = [];
 		ancestriesByLength[i] = [];
+		anagramsByIndex[i] = {};
 	} 
 	hand = [...hand];
-    queryTree(tree, hand, anagramsByLength, ancestriesByLength)
-    return { anagramsByLength, ancestriesByLength };
+    queryTree(tree, hand, anagramsByLength, ancestriesByLength, anagramsByIndex)
+    return { anagramsByLength, ancestriesByLength, anagramsByIndex };
 }
 
 
@@ -74,7 +83,7 @@ function traverseCharactersInOrder(tree, letters) {
 }
 
 var dictree = buildDictree(dict, alphabet);
-var { anagramsByLength, ancestriesByLength } = buildAnagramHashAndAncestryHash(dictree, 'sampler')
+var { anagramsByLength, ancestriesByLength, anagramsByIndex } = buildAnagramHashAndAncestryHash(dictree, 'sampler')
 
 function iterate(iterations) {
 	for ( let blob of iterations ) {
