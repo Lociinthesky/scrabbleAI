@@ -8,7 +8,7 @@ const DictionaryTree = function(path, dict) {
   this.value = null;
   this.path = path;
   this.depth = path.length;
-  if ( dict[0] === path ) 
+  if ( dict[0] === path ) {
     this.value = dict.shift();
   }
   while (dict[0] && dict[0].startsWith(path)) {
