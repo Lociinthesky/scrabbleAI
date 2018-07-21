@@ -83,39 +83,71 @@ function traverseCharactersInOrder(tree, letters) {
 }
 
 var dictree = buildDictree(dict, alphabet);
-var { anagramsByLength, ancestriesByLength, anagramsByIndex } = buildAnagramHashAndAncestryHash(dictree, 'sampler')
+var { anagramsByLength, ancestriesByLength, anagramsByIndex } = buildAnagramHashAndAncestryHash(dictree, 'ThisisaLongHand')
 
-function iterate(iterations) {
+function iterate(iterations, board) {
 	for ( let blob of iterations ) {
 		getWordsForSpace(blob);
 	}
 }
+// iterate(iterations, board);
+// iterate($iterations, $(board))
+
+// iterations.concat(respondToLetterPlacement(row, col, board))
+// $iterations.concat(respondToLetterPlacement(col, row, $(board)));
+
+function updateRow(row, col, board, idxOfLetter) {
+	let blobHolder = [];
+	for ( col; col < idxOfLetter; col++ ) {
+		if ( board[row][col] !== '' ) continue; 
+		blobHolder.push(updateSpace(row, col, board, idxOfLetter));
+	}
+	blobHolder.push(finalUpdate(row, col, board, idxOfLetter));
+	return blobHolder;
+}  
+function updateSpace(row, col, board, idxOfLetter) {
+	let slice = board[row].slice(col, col + maxDepth + 1);
+	let buffer = slice.join('').search(/\w/);
+	return {row, col, slice, buffer}
+}
+function finalUpdate(row, col, board, idxOfLetter){
+	if ( board[row][idxOfLetter+1] === '' ) {
+		return updateSpace(row, col, board, idxOfLetter+1);
+	}
+}
 
 function respondToLetterPlacement(row, col, board) {
-    let iterations = [];
-  	let dataBlob = {};
-  	//let iterationsReflected = [];
-  	//everything below should be wrapped in a fn so I can pass in row and col backward.
-  	//or everything, like iterations, should be an object, so iterations.board and iterations.reflect
 	let index = (col > maxDepth+1) ? col - maxDepth - 1 : 0;
-	for ( index; index < col; index++ ) {
-		if ( board[row][index] === '' ) {
-			let slice = board[row].slice(index, index + maxDepth + 1);
-		    let buffer = slice.join('').search(/\w/);
-		}
-		iterations.push({row, slice, buffer, col: index})
-	}
-	if ( board[row][col+1] === '' ) {
-		iterations.push({row, col: col+1, buffer: 0, slice: board[row].slice(col+1)})
-	}
-	return iterations;
+	return updateRow(row, index, board, col);
 }
+
+	
+// function respondToLetterPlacement(row, col, board) {
+//     let iterations = [];
+//   	let dataBlob = {};
+// 	let index = (col > maxDepth+1) ? col - maxDepth - 1 : 0;
+// 	for ( index; index < col; index++ ) {
+// 		if ( board[row][index] === '' ) {
+// 			let slice = board[row].slice(index, index + maxDepth + 1); //up to 9 cells starting with this
+// 		    let buffer = slice.join('').search(/\w/); //the number of spaces before the first word
+// 		}
+// 		iterations.push({row, slice, buffer, col: index})
+// 	}
+// 	if ( board[row][col+1] === '' ) {
+// 		iterations.push({row, col: col+1, buffer: 0, slice: board[row].slice(col+1)}) 
+// 	}
+// 	return iterations;
+// }
+
+//if iterations = respondToLetterPlacement(row, col, board)
+//tn $iterations = respondToLetterPlacement(col, row, $board);
 
 // function getWordsForSpace(parameters) { 
 // 	let viableWords = [];
 // 	let viableTrees = [];
 // 	let firstArgument = true;
 // 	while ( parameters.length ) { 
+
 // 		var arg = parameters.shift();
 // 		if ( Array.isArray(arg) ) {
 // 			if ( firstArgument ) {
