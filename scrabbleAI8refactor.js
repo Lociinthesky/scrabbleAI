@@ -37,24 +37,13 @@ function excise(char, arr) {
   return arr.slice(0,idx).concat(arr.slice(idx+1));
 }
 
-function queryTree(tree, remaining, Treehash) {
-	console.log(`Treehash: ${Treehash}
-		Depth: ${tree.depth}
-		tree: ${tree}`)
-  Treehash[tree.depth].push({tree, remaining}); 
-  if (remaining.length === 0) return;
-    const memoizer = [];
-  for ( let c of remaining ) {
-    if (memoizer.includes(c)) continue;
-    else memoizer.push(c);
-    if (tree[c]) {
-      queryTree(tree[c], excise(c, remaining), Treehash)
-    }   
-  }
-}
+
+	// console.log(`Treehash: ${Treehash}
+	// 	Depth: ${tree.depth}
+	// 	tree: ${tree}`)
 
 function queryTree(tree, remaining, Treehash) {
-  Treehash[tree.depth].push({tree, remaining}); 
+  Treehash[tree.depth].push({path: tree.path, remaining}); 
   if (remaining.length === 0) return;
     const memoizer = [];
   for ( let c of remaining ) {
@@ -97,48 +86,65 @@ function buildHashes(tree, hand) {
   return Treehash 
 }
 var Dictree = new DictionaryTree('', dict)
-var Treehash = buildHashes(Dictree, 'abcdefg', 8)
+var Treehash = buildHashes(Dictree, 'abcderg', 8)
 
-function getSliceAndMin(row, col, board) {
-  let slice = getSlice(row, col, board);
-  let min = getMin(row, col, board);
-  return {slice, min}
-}
+// function getSliceAndMin(row, col, board) {
+//   let slice = getSlice(row, col, board);
+//   let min = getMin(row, col, board);
+//   return {slice, min}
+// }
 
-function respondToLetterPlacement(row, col, board) {
-  let startingIndex = (col > maxDepth) ? col - maxDepth : 0;
-  return updateRow(row, startingIndex, board, col); //setState?
-}
+// function respondToLetterPlacement(row, col, board) {
+//   let startingIndex = (col > maxDepth) ? col - maxDepth : 0;
+//   return updateRow(row, startingIndex, board, col); //setState?
+// }
 
-function updateRow(row, col, board, idxOfLetter) {
-  let rowState = {
-  	startingSpaces: [],
-  	restrictedSpaces: []
-  }
-  for ( let startIdx = col; startIdx < idxOfLetter; startIdx++ ) {
-  	var record = {
-  		row: row,
-  		col: startIdx
-  	}
-  	board[row].playableWords.set(col, getWordsAtSpace(row, startIdx, board))//setState
-  	recordKeeping.push(record);
-  }
-  return recordKeeping;
-}
+// function updateRow(row, col, board, idxOfLetter) {
+//   let rowState = {
+//   	startingSpaces: [],
+//   	restrictedSpaces: []
+//   }
+//   for ( let startIdx = col; startIdx < idxOfLetter; startIdx++ ) {
+//   	var record = {
+//   		row: row,
+//   		col: startIdx
+//   	}
+//   	board[row].playableWords.set(col, getWordsAtSpace(row, startIdx, board))//setState
+//   	recordKeeping.push(record);
+//   }
+//   return recordKeeping;
+// }
 
 function getMin(row, col, board) {
 	let min = -1;
 	let rowAbove = ( row > 0 ) ? 
-		board[row-1] : Array(9).fill('');
+		board[row-1] : [] //Array(9).fill('');
 	let rowBelow = ( row < n - 1 ) ? 
-		board[row+1] : Array(9).fill('');
-	for ( let i = col, count = 1; i < maxDepth + col; i++, count++ ) {
-		if (board[row][i]) return count - 1;
-		if (rowAbove[i]) return count;
-	 	if (rowBelow[i]) return count;
+		board[row+1] : [] //Array(9).fill('');
+	for ( let i = 0; i < n; i++) {
+		if (board[row][i]) return i;
+		if (rowAbove[i]) return i + 1;
+	 	if (rowBelow[i]) return i + 1;
 	}	 		
 	return min;
 }
+
+
+//ORIGINAL FN WITH REDUNDANT COUNT VARIABLE
+// function getMin(row, col, board) {
+// 	let min = -1;
+// 	let rowAbove = ( row > 0 ) ? 
+// 		board[row-1] : [] //Array(9).fill('');
+// 	let rowBelow = ( row < n - 1 ) ? 
+// 		board[row+1] : [] //Array(9).fill('');
+// 	for ( let i = 0, count = 1; i < n; i++, count++ ) {
+// 		if (board[row][i]) return count - 1;
+// 		if (rowAbove[i]) return count;
+// 	 	if (rowBelow[i]) return count;
+// 	}	 		
+// 	return min;
+// }
+
 
 function getSlice(row, col, board) {
 	return board[row].slice(col, col + maxDepth + 1);
@@ -187,11 +193,26 @@ function downTrack(row, col, board) {
 	}
 	return str.trim();
 }
-function takePath(startNode, str) {
-	for ( let c of str ) {
-		startNode = startNode[c];
+// function takePath(startNode, str) {
+// 	for ( let c of str ) {
+// 		startNode = startNode[c];
+// 	}
+// 	return startNode;
+// }
+
+What will NOT change is the fact that there is a live space above or below
+function takePaths(...substrings) {
+  var node = Dictree;
+  for ( let str of substrings ) {
+		for ( let c of str ) {
+			if ( node[c]) {
+               node = node[c]
+            } else {
+               return null;
+            }
+		}
 	}
-	return startNode;
+  return node.value;
 }
 
 function updateAdjacentRequiredLetters(row, col, board) {
@@ -228,6 +249,16 @@ var testBoard = [
 
 [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "]]
 
+
+for ( var row = 0; row < n; row++ ) {
+	var min = getMin(row, col, board);
+	for ( var col = 0; col < n; col++ ) {
+		if ( ~min ) {
+			col += 7;
+			continue;
+		}
+	}
+}
 function getWordsAtSpace(row, col, board) {
 	let playableWords = [];
 	let min = getMin(row, col, board)
