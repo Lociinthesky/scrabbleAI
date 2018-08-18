@@ -118,8 +118,10 @@ function getMin(row, col = 0, board) {
 	let rowAbove = ( row > 0 ) ? board[row-1] : []
 	let rowBelow = ( row < n - 1 ) ? board[row+1] : [] 
 	for ( let i = 0; i < maxDepth; i++) {
-		if ( rowAbove[i] | rowBelow[i] ) {
-			return i;
+		if ( row[i] ) {
+			return i - 1;
+		} else if ( rowAbove[i] | rowBelow[i] ) {
+			return row[i+1] ? i : i + 1;
 		}
 	}	 		
 	return min;

@@ -58,19 +58,14 @@ function buildHashes(tree, hand) {
 var Dictree = new DictionaryTree('', dictABC)
 var Treehash = buildHashes(Dictree, 'abcderg', 8)
 
-function loners(row, col, board) { 
-  var loners = [];
-  var lonerIndices = [];
-  for ( var i = 0; i < n; i++ ) {
-    loners.push(!board[row-1][i] & !board[row+1][i])
-    if (!board[row-1][i] & !board[row+1][i] === 0){
-    	lonerIndices.push(i);
-    }
-  }
-  board[row].loners = loners;
-  board[row].lonerIndices = lonerIndices;
-}
 
+function neighbored(row, col, board) { 
+  var neighbored = [];
+  for ( var i = 0; i < n; i++ ) {
+    neighbored.push(!(!board[row-1][i] & !board[row+1][i]))
+  }
+  board[row].neighbored = neighbored;
+}
 
 var alphaDoubles = {
 a: ["a", "d", "e", "g", "h", "i", "l", "m", "n", "r", "s", "t", "w", "x", "y"],
@@ -118,13 +113,29 @@ function getMin(row, col = 0, board) {
 	let rowAbove = ( row > 0 ) ? board[row-1] : []
 	let rowBelow = ( row < n - 1 ) ? board[row+1] : [] 
 	for ( let i = 0; i < maxDepth; i++) {
-		if ( rowAbove[i] | rowBelow[i] ) {
-			return i;
+		if ( row[i] ) {
+			return i - 1;
+		} else if ( rowAbove[i] | rowBelow[i] ) {
+			return row[i+1] ? i : i + 1;
 		}
 	}	 		
 	return min;
 }
 
+function getRowMin(row, col = 0, board) {
+	let min = -1;
+	var trackWord = '';
+	let rowAbove = ( row > 0 ) ? board[row-1] : []
+	let rowBelow = ( row < n - 1 ) ? board[row+1] : [] 
+	for ( let i = 0; i < n; i++) {
+		if ( board[row][i] ) {
+			return i - 1;
+		} else if ( rowAbove[i] | rowBelow[i] ) {
+			return board[row][i+1] ? i : i + 1;
+		}
+	}	 		
+	return min;
+}
 
 function getSlice(row, col, board) {
 	return board[row].slice(col, col + maxDepth + 1);
