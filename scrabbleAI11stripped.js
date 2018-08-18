@@ -58,24 +58,31 @@ function buildHashes(tree, hand) {
 var Dictree = new DictionaryTree('', dictABC)
 var Treehash = buildHashes(Dictree, 'abcderg', 8)
 
-
-function findNeighbors(row, col, board) { 
+function fnSelect(board, row, i, n = 15) {
+	if ( row === 0 ) return !!board[row+1][i];
+	if ( row === n-1 ) return !!board[row-1][i]
+	else return !(!board[row-1][i] & !board[row+1][i])
+}
+function findNeighbors(board, row, col = 0, n = 15) { 
   var neighbored = [];
   var neighborIndices = [];
+  var occupied = [];
   for ( var i = 0; i < n; i++ ) {
-  	let hasNeighbor = !(!board[row-1][i] & !board[row+1][i]);
+  	let hasNeighbor = fnSelect(board, row, i);
     neighbored.push(hasNeighbor)
     if ( hasNeighbor ) neighborIndices.push(i);
+    if ( board[row][i] ) occupied.push(i);
   }
   board[row].neighbored = neighbored;
   board[row].neighborIndices = neighborIndices;
+  board[row].occupied = occupied;
 }
 
-function getSlice(row, col, board) {
+function getSlice(board, row, col = 0) {
 	return board[row].slice(col, col + maxDepth + 1);
-}3
+}
 
-function upTrack(row, col, board) {
+function upTrack(board, row, col = 0) {
 	var str = board[row][col];
 	while ( board[row--][col] && board[row][col] != '') {
 		str = board[row][col] + str;  
@@ -83,7 +90,7 @@ function upTrack(row, col, board) {
 	return str.trim()
 }
 
-function downTrack(row, col, board) {
+function downTrack(board, row, col = 0) {
 	var str = board[row][col];
 	while ( board[row++][col] && board[row][col] != '') {
 		str += board[row][col];
@@ -149,41 +156,41 @@ z: []
 };
 
 var testBoard = [
-[" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "], //0
+[" ", " ", " ", " ", "p", "i", " ", "i", "t", "e", " ", " ", " ", "n", " "], //0
 
-[" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "], //1
+[" ", " ", " ", "w", "a", "n", "e", "s", " ", "t", " ", " ", " ", "o", " "], //1
 
-[" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "a", " ", " ", " ", " "], //2
+[" ", " ", " ", "i", " ", " ", "e", " ", " ", " ", "a", "l", "m", "s", " "], //2
 
-[" ", " ", " ", " ", " ", " ", " ", " ", " ", "a", "w", " ", " ", " ", " "], //3
+[" ", " ", " ", "n", " ", " ", "l", " ", " ", "a", "w", " ", " ", "e", " "], //3
 
-[" ", " ", " ", " ", " ", " ", " ", "f", "i", "r", "e", " ", " ", " ", " "], //4
+[" ", " ", " ", "g", "o", " ", " ", "f", "i", "r", "e", " ", " ", "y", " "], //4
 
-[" ", " ", " ", " ", " ", " ", " ", " ", " ", "m", "a", " ", " ", " ", " "], //5
+[" ", " ", "e", " ", "w", " ", " ", " ", " ", "m", "a", " ", " ", " ", " "], //5
 
-[" ", " ", " ", " ", " ", " ", " ", " ", "p", "e", "r", "i", "l", " ", " "], //6
+[" ", " ", "a", " ", "l", "a", "y", " ", "p", "e", "r", "i", "l", " ", " "], //6
 
-[" ", " ", " ", " ", " ", " ", " ", "l", "a", "d", "y", " ", " ", " ", " "], //7
+[" ", " ", "r", " ", " ", " ", " ", "l", "a", "d", "y", " ", " ", " ", " "], //7
 
-[" ", " ", " ", " ", " ", " ", "h", "e", "x", " ", " ", " ", " ", " ", " "], //8
+[" ", " ", "t", " ", " ", " ", "h", "e", "x", " ", " ", " ", " ", " ", " "], //8
 
-[" ", " ", " ", " ", " ", " ", "y", " ", " ", " ", " ", " ", " ", " ", " "], //9
+[" ", " ", "h", "a", "p", "p", "y", " ", " ", " ", " ", " ", " ", " ", " "], //9
 
-[" ", " ", " ", " ", " ", " ", "p", " ", " ", " ", " ", " ", " ", " ", " "], //10
+[" ", " ", " ", " ", " ", " ", "p", " ", " ", "p", " ", " ", " ", " ", " "], //10
 
-[" ", " ", " ", " ", " ", " ", "e", " ", " ", " ", " ", " ", " ", " ", " "], //11
+[" ", " ", " ", " ", " ", " ", "e", " ", " ", "a", "r", "b", "o", "r", " "], //11
 
-[" ", " ", " ", "w", "o", "o", "d", "m", "e", "n", " ", " ", " ", " ", " "], //12
+[" ", " ", " ", "w", "o", "o", "d", "m", "e", "n", " ", "u", " ", " ", " "], //12
 
-[" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "], //13
+[" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "l", " ", " ", " "], //13
 
-[" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "]].map(z => z.map(x => x.replace(' ', '')))
+[" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "o", "l", "d", " ", " "]].map(z => z.map(x => x.replace(' ', '')))
 
 
 for ( var row = 0; row < n; row++ ) {
+	findNeighbors(board, row, col);
 	for ( var col = 0; col < n; col++ ) {
 		
-		console.log(`min: ${min}, row: ${row}, col: ${col}`);
 	}
 }
 
