@@ -51,7 +51,7 @@ function buildHashes(tree, hand) {
   for ( var i = 0; i <= maxDepth+1; i++ ) {
   		Treehash[i] = [];
   }         
-  hand = [...hand];
+  hand = [...hand]; 
   queryTree(tree, hand, Treehash)
   return Treehash 
 }
@@ -71,80 +71,9 @@ function findNeighbors(row, col, board) {
   board[row].neighborIndices = neighborIndices;
 }
 
-var alphaDoubles = {
-a: ["a", "d", "e", "g", "h", "i", "l", "m", "n", "r", "s", "t", "w", "x", "y"],
-b: ["a", "e", "i", "o", "y"],
-c: [],
-d: ["a", "e", "o"],
-e: ["f", "h", "l", "m", "n", "r", "s", "t", "x"],
-f: ["a"],
-g: ["o"],
-h: ["a", "e", "i", "m", "o"],
-i: ["d", "f", "n", "s", "t"],
-j: ["o"],
-k: ["a"],
-l: ["a", "i", "o"],
-m: ["a", "e", "i", "m", "o", "u", "y"],
-n: ["a", "e", "o", "u"],
-o: ["d", "e", "f", "h", "m", "n", "p", "r", "s", "w", "x", "y"],
-p: ["a", "e", "i"],
-q: ["i"],
-r: ["e"],
-s: ["h", "i", "o"],
-t: ["a", "i", "o"],
-u: ["h", "m", "n", "p", "s", "t"],
-v: [],
-w: ["e", "o"],
-x: ["i", "u"],
-y: ["a", "e"],
-z: []
-};
-function preDouble (alpha){
-  var pre = {};
-  for ( let [key, val] of Object.entries(alpha)) {
-    for ( let letter of val ) {
-      if (pre[letter] == undefined) pre[letter] = [key]
-      else (pre[letter].push(key));
-    }
-  }
-  return pre;
-}
-var preDoubles = preDouble(alphaDoubles)
-
-// function getMin(row, col = 0, board) {
-// 	let min = -1;
-// 	var trackWord = '';
-// 	let rowAbove = ( row > 0 ) ? board[row-1] : []
-// 	let rowBelow = ( row < n - 1 ) ? board[row+1] : [] 
-// 	for ( let i = 0; i < maxDepth; i++) {
-// 		if ( row[i] ) {
-// 			return i - 1;
-// 		} else if ( rowAbove[i] | rowBelow[i] ) {
-// 			return row[i+1] ? i : i + 1;
-// 		}
-// 	}	 		
-// 	return min;
-// }
-
-
 function getSlice(row, col, board) {
 	return board[row].slice(col, col + maxDepth + 1);
-}
-
-function backTrack(row, col, board) {
-	var str = board[row][col];
-	while ( board[row][col--] && board[row][col] !== '') {
-		str = board[row][col] + str;
-	}
-	return str.trim()
-}
-function forwardTrack(row, col, board) {
-	var str = board[row][col];
-	while ( board[row][col++ ] && board[row][col] != '') {
-		str += board[row][col]
-	}
-	return str.trim()
-}
+}3
 
 function upTrack(row, col, board) {
 	var str = board[row][col];
@@ -177,9 +106,48 @@ function takePaths(...substrings) {
   return node.value;
 }
 
-function updateAdjacentRequiredLetters(row, col, board) {
-	if (board[row][col - 1] && board[row][col - 1] !== ''){} 
+
+function preDouble (alpha){
+  var pre = {};
+  for ( let [key, val] of Object.entries(alpha)) {
+    for ( let letter of val ) {
+      if (pre[letter] == undefined) pre[letter] = [key]
+      else (pre[letter].push(key));
+    }
+  }
+  return pre;
 }
+var preDoubles = preDouble(alphaDoubles)
+
+var alphaDoubles = {
+a: ["a", "d", "e", "g", "h", "i", "l", "m", "n", "r", "s", "t", "w", "x", "y"],
+b: ["a", "e", "i", "o", "y"],
+c: [],
+d: ["a", "e", "o"],
+e: ["f", "h", "l", "m", "n", "r", "s", "t", "x"],
+f: ["a"],
+g: ["o"],
+h: ["a", "e", "i", "m", "o"],
+i: ["d", "f", "n", "s", "t"],
+j: ["o"],
+k: ["a"],
+l: ["a", "i", "o"],
+m: ["a", "e", "i", "m", "o", "u", "y"],
+n: ["a", "e", "o", "u"],
+o: ["d", "e", "f", "h", "m", "n", "p", "r", "s", "w", "x", "y"],
+p: ["a", "e", "i"],
+q: ["i"],
+r: ["e"],
+s: ["h", "i", "o"],
+t: ["a", "i", "o"],
+u: ["h", "m", "n", "p", "s", "t"],
+v: [],
+w: ["e", "o"],
+x: ["i", "u"],
+y: ["a", "e"],
+z: []
+};
+
 var testBoard = [
 [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "], //0
 
