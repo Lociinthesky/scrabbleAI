@@ -212,6 +212,13 @@ z: []
 //same as before, this function should be just dealing with trees, not paths.
 //so the map function has to first do tree = Dictree.take(root.path) 
 //then we can call this on it.
+
+	  	// 		  console.log(`
+	  	// board[row][pointer]: ${board[row][pointer]}
+	  	// tree[board[row][pointer]]:${ JSON.stringify(tree[board[row][pointer]])}
+	  	// pointer: ${pointer},
+	  	// validateMe: ${validateMe}
+	  	// `)
 var flagg = true;
 	var scoreMe = [];
 	var validateMe = [];
@@ -221,35 +228,16 @@ function loop(board, hand) {
     var iterationCount = 0;
 	function iterateAndSave(tree, remaining, pointer, restricted = {}) {
 		iterationCount++;
-		// debugger;
-	  // console.log(`top of IterateAndSave:
-	  // 	tree.path: ${path},
-	  // 	remaining: ${remaining},
-	  // 	tree.value: ${value}
-	  // 	pointer: ${pointer},
-	  // 	board[row][pointer]: ${board[row][pointer]}
-	  // 	iterationCount: ${iterationCount}
-	  // 	tree[board[row][pointer]]: ${tree[board[row][pointer]]},
-	  // 	`)
 
-		
 	  if ( board[row][pointer] ) {
 	  	if ( tree[board[row][pointer]] ) {
-	  			  console.log(`
-	  	board[row][pointer]: ${board[row][pointer]}
-	  	tree[board[row][pointer]]:${ JSON.stringify(tree[board[row][pointer]])}
-	  	pointer: ${pointer},
-	  	validateMe: ${validateMe}
-	  	`)
+
 	  		iterateAndSave(tree[board[row][pointer]], remaining, pointer + 1)
 	  	} else {
 	  		return;
 	  	}
-	  } else {//should there be this ELSE here or nothing at all?
-	  	//if ( tree.value ) scoreMe.push( tree.value );
-
+	  } else {
 	  	if ( tree.value ) validateMe.push( tree.value );  	
-	  	// if ( tree.value === 'spirited') { hailMary = 'spirited'}
 	  	if (remaining.length === 0) return;
 	  	for ( let c of remaining ) {
 	      if (restricted[c]) continue;
@@ -265,7 +253,8 @@ function loop(board, hand) {
 	for ( row = 0; row < 1; row++ ) {
 
 	  var { neighbored, neighborIndices, occupied } = findNeighbors(board, row);
-	  var min = Math.min(neighborIndices[0]+1, occupied[0]);
+	  //var min = Math.min(neighborIndices[0]+1, occupied[0]);
+	  var min = 2;
 	  var pointer = min - 1;
 	  var rootBlobs = Treehash[min];
       for ( var col = 0; col < 15; col++ ) {
@@ -277,7 +266,8 @@ function loop(board, hand) {
 			iterateAndSave(tree, hand, col);
 		} else {
 			rootBlobs.forEach(({tree, remaining}, i) => {
-				console.log(validateMe)
+				console.log(`col: ${col},
+					valMe: ${JSON.stringify(validateMe)}`)
 				debugger;
 				pointer+= col;
 				iterateAndSave(tree, remaining, pointer)
