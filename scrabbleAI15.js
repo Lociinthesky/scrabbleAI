@@ -238,7 +238,7 @@ function loop(board, hand) {
 	  	//if ( tree.value ) scoreMe.push( tree.value );
 
 	  	if ( tree.value ) validateMe.push( tree.value );
-	  	console.log(tree.value);
+	  	console.log('tree.value: ' + tree.value);
 	  	if ( tree.value === 'spirited') { hailMary = 'spirited'}
 	  	if (remaining.length === 0) return;
 	  	for ( let c of remaining ) {
