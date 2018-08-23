@@ -8,18 +8,19 @@ var n = 15;
 	var emptyRow = [];
 	var hailMary = 'hailMary';
 var emptyBoard = Array(15).fill(emptyRow).map(r => r.slice())
-function boardDataConstructor() {
+function boardDataConstructor(filler) {
 
 	for ( var i = 0; i < 15; i++ ) {
-		emptyRow.push({});
+		emptyRow.push(filler);
 	}
 	var restricted = [];
 	for ( var j = 0; j < 15; j++ ) {
-		var emptyBoardData = Array(15).fill(emptyRow).map(r => r = {})
+		var emptyBoardData = Array(15).fill(emptyRow).map(r => r = filler)
 		restricted.push(emptyBoardData)
 	}
 	return restricted
 }
+var scoreMe = boardDataConstructor([]);
 var restricted = boardDataConstructor();
 var emptyBoardData = Array(15).fill(emptyRow).map(r => r = {})
 var requiredLetters = Array(15).fill(emptyRow).map(r => r = []);
@@ -72,7 +73,7 @@ function excise(char, arr) {
 
 
 function queryTree(tree, remaining, Treehash) {
-  Treehash[tree.depth].push({tree, remaining}); 
+  Treehash[tree.depth].push({tree, remaining, last: tree.path[tree.depth-1]}); 
   if (remaining.length === 0) return;
     const memoizer = [];
   for ( let c of remaining ) {
@@ -131,26 +132,51 @@ function pointerAndSkip(pointer, occupied) {
   }
   return { skipRow, pointer };
 }
+var flag = true;
 
 function newFindNeighbors(board, row, col = 0, n = 15) { 
   var pointer, skipRow;
   var neighbored = []; 
   var occupied = [];
   var viableColumns = [];
-  var lastWasLetter = false;
+  var appenders = [];
+  if ( lastWasLetter == undefined ) var lastWasLetter = false;
   for ( var i = 0; i < n; i++ ) {
   	let hasNeighbor = fnSelect(board, row, i);
     neighbored.push(hasNeighbor)
-    if ( hasNeighbor && pointer == undefined) pointer = i;
+    if (flag) {
+    	console.log(`i: ${i}, top of loop.`)
+    } 
+    if ( hasNeighbor && pointer == undefined) {
+    	pointer = i;
+    	if (flag){
+    		console.log(`i: ${i}, hasNeighbor && pointer == undefined is true.`)
+    	}
+    }
     if ( board[row][i] ) {
     	occupied.push(i);
     	lastWasLetter = true;
-    } else if (lastWasLetter) {
+    	if (flag) {
+    		console.log(`i: ${i}, lastWasLetter is ${lastWasLetter}, board[row][i] is ${board[row][i]}.`)
+    	}
+    } 
+    if (!lastWasLetter && board[row][i] == '') {
+    	if (flag) {
+    		console.log(`i: ${i}, lastWasLetter is ${lastWasLetter}.`)
+    	}
     	viableColumns.push(i);
+    	lastWasLetter = false;
+    } else if (board[row][i] == '') {
+    	appenders.push(i);
+    	if (flag) {
+    		console.log(`i: ${i}, appenders is ${appenders}.`)
+    	}
     	lastWasLetter = false;
     }
   }
-  { skipRow, pointer } = pointerAndSkip(pointer, occupied);
+  var { skipRow, pointer } = pointerAndSkip(pointer, occupied);
+  console.log(viableColumns);
+  flag = false;
   return { neighbored, occupied, pointer, min, skipRow, viableColumns }
 }
 
@@ -185,10 +211,8 @@ function rightTrack(board, row, col = 0 ) {
 //What will NEVER change is the fact that there is an occupied space above or below a given space
 function takePaths(...substrings) {
   var node = Dictree;
-  console.log('substrings: ' + substrings)
   for ( let str of substrings ) {
 		for ( let c of str ) {
-			console.log(`str: ${str}, c: ${c}`);
 			if ( node[c]) {
                node = node[c]
             } else {
@@ -254,31 +278,33 @@ z: []
 
 	var scoreMe = [];
 	var validateMe = [];
-
+var columns = [];
 function loop(board, hand) {
 	var tree;
     var iterationCount = 0;
-	for ( row = 0; row < 1; row++ ) { 
-		//instead of the neighborIndices array,
-		//just make neighborIndices[0] the value of pointer (always true)
-		//min will be the lesser of occupied[0] and pointer+1
+	for ( let row = 0; row < 1; row++ ) { 
 	  var {neighbored, occupied, pointer, min, skipRow, viableColumns} = newFindNeighbors(board, row);
-	  var { neighbored, neighborIndices, occupied } = findNeighbors(board, row);
-	  var min = Math.min(neighborIndices[0]+1, occupied[0]);//WILL SOMETIMES BE NAN
-	  var pointer = min - 1;
+	  columns.push(viableColumns);
+	  if (skipRow) {
+	  	continue;
+	  }
 	  var roots = Treehash[min];
-      for ( var col = 0; col < 15; col++ ) {
-      	pointer += col;//why?????
+
+      for ( let col of viableColumns ) {
+      	console.log(`viableColumns top of loop: ${viableColumns}`);
+      	console.log(`viableColumns stringified just beneath: ${JSON.stringify(viableColumns)}`);
+      	var {neighbored, occupied, pointer, min} = newFindNeighbors(board, row, col);    	
       	while ( roots.length ) {
 	      	if (neighbored[pointer]) {
-	      		roots = roots.filter(downFilter);
+	      		var downWord = downTrack(board, row, col);
+	      		roots = roots.filter(({tree, remaining, last}) => takePaths(last, downWord));
 	      	}
 	      	if (occupied.includes(pointer+1)) {
 	      		var occupant = rightTrack(board, row, col);
-	      		roots = roots.filter(rightFilter);
+	      		// roots = roots.filter(rightFilter);
 	      		pointer += occupant.length;
 	      	}
-	      	var nextRoots = [];
+	      	var newRoots = [];
 	      	roots.forEach(({tree, remaining}) => {
 	      		if (tree.value) {
 	      			scoreMe[row][col].push(tree.value);
@@ -330,7 +356,7 @@ var testBoard = [
 
 [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "o", "l", "d", " ", " "]].map(z => z.map(x => x.replace(' ', '')))
 
-// loop(testBoard, 'abcdsrg'.split(''));
-debugger;
-console.log('HM: ' + hailMary);
+loop(testBoard, 'abcdsrg'.split(''));
+// debugger;
+// console.log('HM: ' + JSON.stringify(columns));
 
