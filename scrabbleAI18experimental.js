@@ -67,7 +67,6 @@ function queryTree(tree, remaining, Treehash) {
     }
   }
 }
-console.log('2' + scoreMe);
 function buildHashes(tree, hand) {
   var Treehash = [];
   for ( var i = 0; i <= maxDepth+1; i++ ) {
@@ -115,7 +114,6 @@ function newFindNeighbors(board, row, col = 0, n = 15) {
   var { skipRow, min } = minAndSkip(pointer, occupied);
   return { neighbored, occupied, pointer, min, skipRow, viableColumns, appenders }
 }
-console.log('3' + scoreMe);
 function getSlice(board, row, col = 0) {
 	return board[row].slice(col, col + maxDepth + 1);
 }
@@ -146,7 +144,6 @@ function rightTrack(board, row, col = 0) {
 	}
 	return str.trim()
 }
-console.log('4' + scoreMe);
 //What will NEVER change is the fact that there is an occupied space above or below a given space
 function takePaths(...substrings) {
 	// console.log('substrs ' + JSON.stringify(substrings));
@@ -192,24 +189,50 @@ function loop(board, hand) {
 	    var roots = Treehash[min];
 
       	while ( roots.length ) {
-	      	if (neighbored[pointer]) {
-	      		var downWord = downTrack(board, row, pointer);
-	      		console.log(`downWord: ${downWord},.
-	      			row: ${row},
-	      			pointer: ${pointer}`)
-	      		roots = roots.filter(r => takePaths(r.last, downWord)) //fix for up && down,
-	      	}
-	      	if (occupied.includes(pointer+1)) {
-	      		var occupant = rightTrack(board, row, col);
+      		console.log('pointer ' + pointer)
+      		if (occupied.includes(pointer)) {
+	      		var occupant = rightTrack(board, row, pointer);
+	      		console.log(`in occupied1: ${pointer}
+	      			occupant: ${occupant}
+	      			row col: ${row} ${col}`)
 	      		roots = roots.reduce((list, r) => {
 	      			var tree = takePaths(r.tree.path, occupant)
 	      			return tree ? list.concat({...r, tree}) : list;
 	      		}, [])
 	      		pointer += occupant.length;
+	      		    		console.log(`exiting occupied1: ${pointer}
+	      			occupant: ${occupant}
+	      			row col: ${row} ${col}`)
+	      	}
+	      	if (neighbored[pointer]) {
+	      		var downWord = downTrack(board, row, pointer);
+	      			console.log(`in np1 pointer: ${pointer}
+	      			neighbored: ${neighbored}`)
+	      		console.log(`downWord: ${downWord},.
+	      			row: ${row},
+	      			pointer: ${pointer}
+	      			row col: ${row} ${col}`)
+	      		roots = roots.filter(r => takePaths(r.last, downWord)) //fix for up && down,
+	      	}
+	      	if (occupied.includes(pointer+1)) { 
+	      		var occupant = rightTrack(board, row, pointer);
+	      			      		console.log(`in occupied2 pointer: ${pointer}
+	      			occupant: ${occupant}
+	      			row col: ${row} ${col}`)
+	      		roots = roots.reduce((list, r) => {
+	      			var tree = takePaths(r.tree.path, occupant)
+	      			return tree ? list.concat({...r, tree}) : list;
+	      		}, [])
+	      		pointer += occupant.length;
+	      			console.log(`exiting occupied2 pointer: ${pointer}
+	      			occupant: ${occupant}
+	      			row col: ${row} ${col}`)
 	      	}
 	      	var newRoots = [];
 	      	roots.forEach(({tree, remaining}) => {
+
 	      		if (tree.value) {
+	      			console.log(`each tree, value: ${tree.value}`)
 	      			scoreMe[row][col].push(tree.value);
 	      		}
 	      		for ( let c of remaining ) {
