@@ -92,26 +92,32 @@ function minAndSkip(pointer, occupied) {
   }
   return {skipRow: false, min};
 }
+function verticalOccupant(board, row, col) {
 
-function dataBlob(board, row, col = 0, n = 15);
+}
+function dataBlob(board, row, col = 0, hand, n = 15);
 	function newFindNeighbors(board, row, col = 0, n = 15) { 
 	  var pointer;
 	  var neighbored = []; 
 	  var occupied = [];
 	  var viableColumns = [];
 	  var appenders = [];
+	  var restricted = {};
 	  if ( lastWasLetter == undefined ) var lastWasLetter = false;
 	  for ( var i = 0; i < n; i++ ) {
-	  	let hasNeighbor = fnSelect(board, row, i);
-	    neighbored.push(hasNeighbor)
+	    neighbored.push(fnSelect(board, row, i));
 	    if ( hasNeighbor && pointer == undefined) pointer = i;
-	    if ( board[row][i] ) occupied.push(i);
+	    if ( board[row][i] ) {
+	    	occupied.push(i)
+	    } else if ( neighbored[i]) {
+	    	restricted = getRestricted(board[row][i])
+	    }
 	    if (!lastWasLetter && board[row][i] == '') viableColumns.push(i);
 	    else if (board[row][i] == '') appenders.push(i);   
 	    lastWasLetter = board[row][i];
 	  }
 	  var { skipRow, min } = minAndSkip(pointer, occupied);
-	  return { neighbored, occupied, pointer, min, skipRow, viableColumns, appenders }
+	  return { occupied, pointer, min, skipRow, viableColumns, appenders, restricted }
 	}
 	return newFindNeighbors(board, row, col);
 }
@@ -187,64 +193,37 @@ function loop(board, hand) {
 	  }
       for ( let col of viableColumns ) {
 
-      	// console.log('vC'+viableColumns)
-      	var {neighbored, occupied, pointer, min} = newFindNeighbors(board, row, col);  
-      	debugger;
-      	 console.log(`pointer: ${pointer},
-      	 	pointer: ${pointer}
-      	 	pointer: ${pointer}
-      	 	pointer: ${pointer}`)
+      	boardData[row][col] = {...newFindNeighbors(board, row, col)};
+
       	pointer += col;
 	    var roots = Treehash[min];
 
       	while ( roots.length ) {
-      		console.log('pointer ' + pointer)
       		if (occupied.includes(pointer)) {
-      			debugger
 	      		var occupant = rightTrack(board, row, pointer);
-	      		console.log(`pointer in occupied1: ${pointer}
-	      			occupant: ${occupant}
-	      			row col: ${row} ${col}
-	      			board[r]: ${board[row]}`)
 	      		roots = roots.reduce((list, r) => {
 	      			var tree = takePaths(r.tree.path, occupant)
 	      			return tree ? list.concat({...r, tree}) : list;
 	      		}, [])
 	      		pointer += occupant.length;
-	      		    		console.log(`pointer exiting occupied1: ${pointer}
-	      			occupant: ${occupant}
-	      			row col: ${row} ${col}`)
-	      		debugger;
 	      	}
 	      	if (neighbored[pointer]) {
 	      		var downWord = downTrack(board, row, pointer);
-	      		// 	console.log(`in np1 pointer: ${pointer}
-	      		// 	neighbored: ${neighbored}`)
-	      		// console.log(`downWord: ${downWord},.,
-	      		// 	pointer: ${pointer}
-	      		// 	row col: ${row} ${col}`)
 	      		roots = roots.filter(r => takePaths(r.last, downWord)) //fix for up && down,
 	      	}
 	      	if (occupied.includes(pointer+1)) { 
 	      		var occupant = rightTrack(board, row, pointer);
-	      			      		console.log(`in occupied2 pointer: ${pointer}
-	      			occupant: ${occupant}
-	      			row col: ${row} ${col}`)
 	      		roots = roots.reduce((list, r) => {
 	      			var tree = takePaths(r.tree.path, occupant)
 	      			return tree ? list.concat({...r, tree}) : list;
 	      		}, [])
 	      		pointer += occupant.length;
-	      			// console.log(`exiting occupied2 pointer: ${pointer}
-	      			// occupant: ${occupant}
-	      			// row col: ${row} ${col}`)
 	      	}
 	      	var newRoots = [];
 	      	roots.forEach(({tree, remaining}) => {
 
 	      		if (tree.value) {
-	      			// console.log(`each tree, value: ${tree.value}`)
-	      			scoreMe[row][col].concat(tree.value);
+	      			boardData[row][col].scoreMe.concat(tree.value);
 	      		}
 	      		for ( let c of remaining ) {
 	      			if (tree[c]) {
