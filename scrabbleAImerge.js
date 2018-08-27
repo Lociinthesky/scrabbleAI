@@ -176,6 +176,15 @@ function getTree(path){
 function updateAdjacentRequiredLetters(board, row, col) {
 	if (board[row][col - 1] && board[row][col - 1] !== ''){} 
 }
+iteration1                             //end here because ite
+[(byLetter[4], nosave), (append(pi), save) ],
+[(byLetter[3], nosave), (append(pi), save) ],
+[(byLetter[2], nosave), (append(pi), save), (step(legalChars), nosave), (append(ite), save)],
+[(byLetter[1], nosave), (append(pi), save), (step(legalChars), nosave), (append(ite), save), (freeStep, save)],
+[col + 'pi'.length],
+[(prepend(pi), (step(legalChars), nosave), (append(ite), save), (freeStep, save), (freeStep, save)],
+[col + 'ite'.length],
+[prepend(ite), (freeStep, save), (freeStep, save), (freeStep, nosave), (append(n), save)]
 var testBoard = [    
 [" ", " ", " ", " ", "p", "i", " ", "i", "t", "e", " ", " ", " ", "n", " "], //0
 
