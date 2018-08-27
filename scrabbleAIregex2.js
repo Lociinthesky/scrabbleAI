@@ -11,9 +11,9 @@ var emptyBoardData = Array(15).fill(emptyRow).map(r => r = {})
 var requiredLetters = Array(15).fill(emptyRow).map(r => r = []);
 
 class Blob {
-	constructor(occupied, neighbor, above, below, $above, $below) {
+	constructor(hasNeighbor, above, below, $above, $below, occupied) {
 		this.occupied = null;
-		this.neighbor = null;
+		this.hasNeighbor = null;
 		this.above = '';
 		this.below = '';
 		this.$above = '';
@@ -201,37 +201,145 @@ var testBoard = [
 
 [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "o", "l", "d", " ", " "]].map(z => z.map(x => x.replace(' ', '')))
 
+//LOG DATA TO TAKE A LOOK AT WHAT IM DOING, THIS IMPLEMENTATION WILL WORK
+//LOG DATA TO TAKE A LOOK AT WHAT IM DOING, THIS IMPLEMENTATION WILL WORK
+//LOG DATA TO TAKE A LOOK AT WHAT IM DOING, THIS IMPLEMENTATION WILL WORK
+//LOG DATA TO TAKE A LOOK AT WHAT IM DOING, THIS IMPLEMENTATION WILL WORK
+//LOG DATA TO TAKE A LOOK AT WHAT IM DOING, THIS IMPLEMENTATION WILL WORK
 
-
-function getData(row) {
+//At the beginning of each row, we get its data - 
+//most importantly, the indices of played words (and those words)
+//and the indices of neighbors.
+//starting at col 0, we see what is nearer -- a neighbor, or a played letter?
+//depending which, we apply slightly different implementations.
+//in either case, we iterate up toward it _inside of its implementation function
+//afterward, we boost the value of column up several spaces at once,
+//since they have already been iterated through.
+//ONE CURRENT PROBLEM:
+//if the played letter and neighbor are far to the right, more than 8 spaces,
+//I have not handled those eventualities yet
+function getData(board, row, hand) {
 	var wordList = [];
 	var wordListStr = '';
 	var wordString = '';
 	var spaceCount = 0;
 	var indexList = [];
-	var spaceList = []
-	for ( var i = 0; i < row.length; i++ ) {
-		wordString += row[i];
+	var spaceList = [];
+	var liveList = [];
+	var liveArgs = {};
+	for ( var i = 0; i < board[row].length; i++ ) {
+		wordString += board[row][i];
 	
-		if ( row[i] === ' ' ) {
+		if ( board[row][i] === '' ) {
 			spaceCount++;
 			if ( wordListStr.length ) {
 				wordList.push(wordListStr)
 				wordListStr = '';
 			}
+			if ( (board[row-1] && board[row-1][i]) || (board[row+1] && board[row+1][i]) ) {
+				liveList.push(i);
+			}
+			// if (boardData[row][i].hasNeighbor) {
+			// 	liveList.push[i];
+			// }
+
 		} else {
 			if (spaceCount) spaceList.push(spaceCount)
 			spaceCount = 0;
-		    wordListStr += row[i];
+		    wordListStr += board[row][i];
 			if (wordListStr.length === 1) {
 				indexList.push(i);
 			}
 		}
 	}
 	if (spaceCount) spaceList.push(spaceCount)
-	return { spaceList, indexList, wordList }
+ 	var skipRow = !indexList.length && !liveList.length ? true : false;
+	return { spaceList, indexList, wordList, liveList, skipRow }
 }
-var data = getData(row)
+
+function liveMinimum(board, row, col, data, pointer) {
+	var { spaceList, indexList, wordList, liveList } = data;
+	var pointer = liveList.shift();
+	var magicNumber = pointer + 1;
+	let legalChars = getLegalChars(board, row, pointer);
+	var maybes = [];
+	//perhaps have an array of these set up
+	//the way we have wordList set up
+	for ( magicNumber; magicNumber > 0; magicNumber-- ) {
+		pointer = magicNumber - 1;
+		var roots = [];
+		for ( let c of legalChars ) {
+			roots.concat(Treehash[magicNumber][c]);
+		}
+
+		//now that we have roots, add first letter.
+		//to add first letter, we must first check to see 
+		//which of the three possibilities the next space is
+		while ( roots.length ) {
+			if (indexList[0] === pointer + 1 + col){
+				var filterDatum = wordList[0]
+				roots = roots.reduce...
+				// if (tree.value) maybe.push(tree.value);
+				pointer += filterDatum.length;
+			} else if (liveList[0] === pointer + 1 + col) {
+				var filterDatum = getLegalChars(board, row, liveList[0])
+				roots = liveFilter(roots);
+				pointer++;
+			} else {
+				roots = oneStep(roots);
+				pointer++;
+			}
+		}
+		
+	}
+}
+// var data = getData(testBoard, 0)
+
+for ( var row = 0; row < 15; row++ ) {
+	var data = getData(testBoard, row)
+	// while (data.skipRow) {
+	// 	row++;
+	// 	data = getData(testBoard, row)
+	// }
+	for ( var col = 0; col < 15; col++ ) {
+		if ( data.liveList[0] + 1 <= data.indexList[0] ) {
+			var pointer = data.liveList.shift();
+			liveMinimum(testBoard, row, col, data, pointer) //, pointer) ?
+			col += pointer + 1; //+1 necessary?
+		} else {
+			prependMinimum(testBoard, row, col, data);
+			data.indexList.shift();
+			col += data.wordList.shift().length;
+		}
+	}
+}
+
+
+
+
+
+//LOG DATA TO TAKE A LOOK AT WHAT IM DOING, THIS IMPLEMENTATION WILL WORK
+//LOG DATA TO TAKE A LOOK AT WHAT IM DOING, THIS IMPLEMENTATION WILL WORK
+
+//LOG DATA TO TAKE A LOOK AT WHAT IM DOING, THIS IMPLEMENTATION WILL WORK
+
+//LOG DATA TO TAKE A LOOK AT WHAT IM DOING, THIS IMPLEMENTATION WILL WORK
+
+//LOG DATA TO TAKE A LOOK AT WHAT IM DOING, THIS IMPLEMENTATION WILL WORK
+
+//LOG DATA TO TAKE A LOOK AT WHAT IM DOING, THIS IMPLEMENTATION WILL WORK
+//LOG DATA TO TAKE A LOOK AT WHAT IM DOING, THIS IMPLEMENTATION WILL WORK
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -254,4 +362,4 @@ function constructRegex(data, c){
   }
 }
 
-var arrayConcat = constructRegex(getData(row), c);
+var arrayConcat = constructRegex(data, 0);
