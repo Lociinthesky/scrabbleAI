@@ -10,20 +10,6 @@ var emptyBoard = Array(15).fill(emptyRow).map(r => r.slice())
 var emptyBoardData = Array(15).fill(emptyRow).map(r => r = {})
 var requiredLetters = Array(15).fill(emptyRow).map(r => r = []);
 
-class Blob {
-	constructor(hasNeighbor, above, below, $above, $below, occupied) {
-		this.occupied = null;
-		this.hasNeighbor = null;
-		this.above = '';
-		this.below = '';
-		this.$above = '';
-		this.$below = '';  	
-	}
-	getRequiredLetters(hand, reflected = false) {
-		
-	}
-}
-
 function boardDataConstructor() {
 	var board = [];
 	var row = [];
@@ -31,27 +17,30 @@ function boardDataConstructor() {
 		board.push([].slice());
 		for ( var j = 0; j < 15; j++ ) {
 			board[i].push(Object.assign({}));
+			board[i].scoreMe = [];
+			board[i].restricted = {};
 		}	
 	}
 	return board;
 }
 var boardData = boardDataConstructor();
 
-var DictionaryTree = function(path, dict) {
-  this.value = null;
-  this.path = path;
-  this.depth = path.length;
-  this.wordChildren = [];  //keep track of the letters which, when appended to path, create a word.
-  if ( dict[0] === path ) {
-    this.value = dict.shift();
-  }
-  while (dict[0] && dict[0].startsWith(path)) {
-    const c = dict[0][this.depth];
-    this[c] = new DictionaryTree(path + c, dict); //recurse
-    if ( this[c].value ) this.wordChildren.push(c) //value would be defined in the recursive call in the line above.
-  }
-}   
 
+var DictionaryTree = function(path, dict){
+	  this.value = null;	
+	  this.path = path;
+	  this.depth = path.length;
+	  this.wordChildren = [];  //keep track of the letters which, when appended to path, create a word.
+	  if ( dict[0] 	=== path ) {
+	    this.value = dict.shift();
+	  }
+	  while (dict[0] && dict[0].startsWith(path)) {
+	    const c = dict[0][this.depth];
+	    this[c] = new DictionaryTree(path + c, dict); //recurse
+	    if ( this[c].value ) this.wordChildren.push(c) //value would be defined in the recursive call in the line above.
+	  }
+   
+}   
 
 function excise(char, arr) {
   const idx = arr.indexOf(char);
@@ -81,14 +70,15 @@ function queryTree(tree, remaining, Treehash) {
 function buildHashes(tree, hand) {
   var Treehash = [];
   for ( var i = 0; i <= maxDepth+1; i++ ) {
-  		Treehash[i] = [Object.create(lastLetterBucket(hand))];
+  		Treehash[i] = Object.create(lastLetterBucket(hand));
   }         
   hand = [...hand];
   queryTree(tree, hand, Treehash)
   return Treehash 
 }
-var Dictree = new DictionaryTree('', dictABC)
-var Treehash = buildHashes(Dictree, 'abcderg', 8)
+								var Dictree = new DictionaryTree('', dictABC)
+								var Treehash = buildHashes(Dictree, 'abcderg', 8)
+								debugger;
 
 function getMin(row, col = 0, board) {
 	let min = -1;
@@ -239,10 +229,6 @@ function getData(board, row, hand) {
 			if ( (board[row-1] && board[row-1][i]) || (board[row+1] && board[row+1][i]) ) {
 				liveList.push(i);
 			}
-			// if (boardData[row][i].hasNeighbor) {
-			// 	liveList.push[i];
-			// }
-
 		} else {
 			if (spaceCount) spaceList.push(spaceCount)
 			spaceCount = 0;
@@ -297,11 +283,16 @@ function liveMinimum(board, row, col, data, pointer) {
 
 for ( var row = 0; row < 15; row++ ) {
 	var data = getData(testBoard, row)
-	// while (data.skipRow) {
-	// 	row++;
-	// 	data = getData(testBoard, row)
-	// }
+	while (data.skipRow) {
+		row++;
+		data = getData(testBoard, row)
+	}
 	for ( var col = 0; col < 15; col++ ) {
+		data.liveList.map(x => x - col);
+		data.indexList.map(x => x - col);
+		//we do this to pretend that col is 0 no matter what
+		//relative to it as a starting point is min or "magicNumber"
+
 		if ( data.liveList[0] + 1 <= data.indexList[0] ) {
 			var pointer = data.liveList.shift();
 			liveMinimum(testBoard, row, col, data, pointer) //, pointer) ?

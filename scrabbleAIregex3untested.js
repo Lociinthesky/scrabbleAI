@@ -10,19 +10,19 @@ var emptyBoard = Array(15).fill(emptyRow).map(r => r.slice())
 var emptyBoardData = Array(15).fill(emptyRow).map(r => r = {})
 var requiredLetters = Array(15).fill(emptyRow).map(r => r = []);
 
-class Blob {
-	constructor(hasNeighbor, above, below, $above, $below, occupied) {
-		this.occupied = null;
-		this.hasNeighbor = null;
-		this.above = '';
-		this.below = '';
-		this.$above = '';
-		this.$below = '';  	
-	}
-	getRequiredLetters(hand, reflected = false) {
+// class Blob {
+// 	constructor(hasNeighbor, above, below, $above, $below, occupied) {
+// 		this.occupied = null;
+// 		this.hasNeighbor = null;
+// 		this.above = '';
+// 		this.below = '';
+// 		this.$above = '';
+// 		this.$below = '';  	
+// 	}
+// 	getRequiredLetters(hand, reflected = false) {
 		
-	}
-}
+// 	}
+// }
 
 function boardDataConstructor() {
 	var board = [];
@@ -297,11 +297,16 @@ function liveMinimum(board, row, col, data, pointer) {
 
 for ( var row = 0; row < 15; row++ ) {
 	var data = getData(testBoard, row)
-	// while (data.skipRow) {
-	// 	row++;
-	// 	data = getData(testBoard, row)
-	// }
+	while (data.skipRow) {
+		row++;
+		data = getData(testBoard, row)
+	}
 	for ( var col = 0; col < 15; col++ ) {
+		data.liveList.map(x => x - col);
+		data.indexList.map(x => x - col);
+		//we do this to pretend that col is 0 no matter what
+		//relative to it as a starting point is min or "magicNumber"
+
 		if ( data.liveList[0] + 1 <= data.indexList[0] ) {
 			var pointer = data.liveList.shift();
 			liveMinimum(testBoard, row, col, data, pointer) //, pointer) ?

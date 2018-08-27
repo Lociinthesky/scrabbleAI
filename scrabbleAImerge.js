@@ -10,20 +10,6 @@ var emptyBoard = Array(15).fill(emptyRow).map(r => r.slice())
 var emptyBoardData = Array(15).fill(emptyRow).map(r => r = {})
 var requiredLetters = Array(15).fill(emptyRow).map(r => r = []);
 
-class Blob {
-	constructor(hasNeighbor, above, below, $above, $below, occupied) {
-		this.occupied = null;
-		this.hasNeighbor = null;
-		this.above = '';
-		this.below = '';
-		this.$above = '';
-		this.$below = '';  	
-	}
-	getRequiredLetters(hand, reflected = false) {
-		
-	}
-}
-
 function boardDataConstructor() {
 	var board = [];
 	var row = [];
@@ -31,27 +17,31 @@ function boardDataConstructor() {
 		board.push([].slice());
 		for ( var j = 0; j < 15; j++ ) {
 			board[i].push(Object.assign({}));
+			board[i].scoreMe = [];
+			board[i].restricted = {};
 		}	
 	}
 	return board;
 }
 var boardData = boardDataConstructor();
 
-var DictionaryTree = function(path, dict) {
-  this.value = null;
-  this.path = path;
-  this.depth = path.length;
-  this.wordChildren = [];  //keep track of the letters which, when appended to path, create a word.
-  if ( dict[0] === path ) {
-    this.value = dict.shift();
-  }
-  while (dict[0] && dict[0].startsWith(path)) {
-    const c = dict[0][this.depth];
-    this[c] = new DictionaryTree(path + c, dict); //recurse
-    if ( this[c].value ) this.wordChildren.push(c) //value would be defined in the recursive call in the line above.
-  }
-}   
 
+var DictionaryTree = function(path, dict, last){
+	  this.value = null;
+	  this.last = last;	
+	  this.path = path;
+	  this.depth = path.length;
+	  this.wordChildren = [];  //keep track of the letters which, when appended to path, create a word.
+	  if ( dict[0] 	=== path ) {
+	    this.value = dict.shift();
+	  }
+	  while (dict[0] && dict[0].startsWith(path)) {
+	    const c = dict[0][this.depth];
+	    this[c] = new DictionaryTree(path + c, dict, c); //recurse
+	    if ( this[c].value ) this.wordChildren.push(c) //value would be defined in the recursive call in the line above.
+	  }
+   
+}   
 
 function excise(char, arr) {
   const idx = arr.indexOf(char);
@@ -65,8 +55,9 @@ function lastLetterBucket(hand) {
 	}
 	return proto;
 }
+
 function queryTree(tree, remaining, Treehash) {
-  Treehash[tree.depth].push({path: tree.path, remaining}); 
+  Treehash[tree.depth].push({tree, remaining}); 
   if (remaining.length === 0) return;
     const memoizer = [];
   for ( let c of remaining ) {
@@ -74,21 +65,36 @@ function queryTree(tree, remaining, Treehash) {
     else memoizer.push(c);
     if (tree[c]) {
       queryTree(tree[c], excise(c, remaining), Treehash)
-    }   
+    }
   }
 }
 
 function buildHashes(tree, hand) {
   var Treehash = [];
   for ( var i = 0; i <= maxDepth+1; i++ ) {
-  		Treehash[i] = [Object.create(lastLetterBucket(hand))];
+  		Treehash[i] = [];
   }         
-  hand = [...hand];
+  hand = [...hand]; 
   queryTree(tree, hand, Treehash)
   return Treehash 
 }
-var Dictree = new DictionaryTree('', dictABC)
-var Treehash = buildHashes(Dictree, 'abcderg', 8)
+								var Dictree = new DictionaryTree('', dict)
+								var Treehash = buildHashes(Dictree, 'abcderg', 8)
+								var byLetter = zz(Treehash, hand);
+
+function zz(Treehash, hand) {
+	var newArr = [];
+	for ( var i = 0; i < Treehash.length; i++ ) {
+	var obj = {}
+		if (Array.isArray(Treehash[i])) {
+			for ( let c of hand ) {
+				obj[c] = Treehash[i].filter(x => x.tree.last === c);
+			}
+		}
+		newArr[i] = obj;
+	}
+	return newArr;
+}
 
 function getMin(row, col = 0, board) {
 	let min = -1;
@@ -104,70 +110,70 @@ function getMin(row, col = 0, board) {
 }
 
 
-function getSlice(row, col, board) {
+function getSlice(board, row, col = 0) {
 	return board[row].slice(col, col + maxDepth + 1);
 }
 
-function backtrackConcat(row, col, board) {
-	var str = board[row][col];
-	var colCopy = col;
-	while ( board[row][col-- ] && board[row][col] !== '') {
-		str = board[row][col] + str;
-	}
-	col = colCopy;
-	while ( board[row][col++ ] && board[row][col] != '') {
-		str += board[row][col]
-	}
-	return str.trim()
-}
-
-function backTrack(row, col, board) {
-	var str = board[row][col];
-	while ( board[row][col-- ] && board[row][col] !== '') {
-		str = board[row][col] + str;
-	}
-	return str.trim()
-}
-function forwardTrack(row, col, board) {
-	var str = board[row][col];
-	while ( board[row][col++ ] && board[row][col] != '') {
-		str += board[row][col]
-	}
-	return str.trim()
-}
-
-function upTrack(row, col, board) {
+function upTrack(board, row, col = 0) {
+	if ( row === 0 ) return '';
 	var str = board[row][col];
 	while ( board[row--][col] && board[row][col] != '') {
-		str = board[row][col] + str;
+		str = board[row][col] + str;  
 	}
 	return str.trim()
 }
 
-function downTrack(row, col, board) {
+function downTrack(board, row, col = 0) {
+	if (row === 14) return '';
 	var str = board[row][col];
-	while ( board[row++][col] && board[row][col] != '') {
+			row++
+	while ( board[row][col] ) {
 		str += board[row][col];
+		row++;
 	}
+	console.log('pre-return')
 	return str.trim()
 }
 
+function rightTrack(board, row, col = 0) {
+	var str = board[row][col];
+	col++;
+	while ( board[row][col] != '') { 
+		str += board[row][col];  
+		col++;
+	}
+	return str.trim()
+}
 //What will NEVER change is the fact that there is an occupied space above or below a given space
 function takePaths(...substrings) {
   var node = Dictree;
   for ( let str of substrings ) {
+  	console.log(`str of substr: ${str}`)
 		for ( let c of str ) {
+			console.log(`c of str: ${c}`)
 			if ( node[c]) {
+			console.log(`node[c]: ${JSON.stringify(node[c])}`)
                node = node[c]
             } else {
-               return '';
+               return null;
             }
 		}
 	}
-  return node.value;
+  return node;
 }
 
-function updateAdjacentRequiredLetters(row, col, board) {
+
+function getTree(path){
+	var node = Dictree[path[0]];
+	path = path.slice(1);
+	for ( var i = 0; i < path.length; i++ ) {
+		node = node[path[i]]
+	}
+	return node;
+}
+
+
+function updateAdjacentRequiredLetters(board, row, col) {
 	if (board[row][col - 1] && board[row][col - 1] !== ''){} 
 }
 var testBoard = [    
@@ -239,10 +245,6 @@ function getData(board, row, hand) {
 			if ( (board[row-1] && board[row-1][i]) || (board[row+1] && board[row+1][i]) ) {
 				liveList.push(i);
 			}
-			// if (boardData[row][i].hasNeighbor) {
-			// 	liveList.push[i];
-			// }
-
 		} else {
 			if (spaceCount) spaceList.push(spaceCount)
 			spaceCount = 0;
@@ -257,7 +259,7 @@ function getData(board, row, hand) {
 	return { spaceList, indexList, wordList, liveList, skipRow }
 }
 
-function liveMinimum(board, row, col, data, pointer) {
+function liveMinimum(board, row, col, data, hand, pointer) {
 	var { spaceList, indexList, wordList, liveList } = data;
 	var pointerCOPY = pointer; 
 	var magicNumber = pointer + 1;
@@ -282,26 +284,49 @@ function liveMinimum(board, row, col, data, pointer) {
 				// if (tree.value) maybe.push(tree.value);
 				pointer += filterDatum.length;
 			} else if (liveList[0] === pointer + 1 + col) {
-				var filterDatum = getLegalChars(board, row, liveList[0])
-				roots = liveFilter(roots);
+				var allowed = getLegalChars(board, row, liveList[0], hand)
+				roots = liveFilter(roots, allowed);
 				pointer++;
 			} else {
 				roots = oneStep(roots);
 				pointer++;
 			}
 		}
-		
 	}
+}
+function liveFilter(arr, allowed) {
+	return arr.reduce((list, {tree, remaining}) => {
+				for ( let legalChar of allowed ) {
+					if (tree[legalChar] && remaining.includes(legalChar)) {
+						list.concat({tree: tree[legalChar], remaining: excise(legalChar, remaining)})
+					}
+				}
+				return list;
+			}, [])
+}
+function getLegalChars(board, row, col, hand) {
+	let allowed = [];
+	let above = row ? upTrack(board, row, col) : ''
+	let below = row < 14 ? downTrack(board, row, col) : ''
+	for ( let c of hand ) {
+		if (takePaths(above, c, below)) allowed.push(c);
+	}
+	return allowed;
 }
 // var data = getData(testBoard, 0)
 
 for ( var row = 0; row < 15; row++ ) {
 	var data = getData(testBoard, row)
-	// while (data.skipRow) {
-	// 	row++;
-	// 	data = getData(testBoard, row)
-	// }
+	while (data.skipRow) {
+		row++;
+		data = getData(testBoard, row)
+	}
 	for ( var col = 0; col < 15; col++ ) {
+		data.liveList.map(x => x - col);
+		data.indexList.map(x => x - col);
+		//we do this to pretend that col is 0 no matter what
+		//relative to it as a starting point is min or "magicNumber"
+
 		if ( data.liveList[0] + 1 <= data.indexList[0] ) {
 			var pointer = data.liveList.shift();
 			liveMinimum(testBoard, row, col, data, pointer) //, pointer) ?
