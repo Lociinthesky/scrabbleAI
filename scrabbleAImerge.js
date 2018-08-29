@@ -176,15 +176,39 @@ function getTree(path){
 function updateAdjacentRequiredLetters(board, row, col) {
 	if (board[row][col - 1] && board[row][col - 1] !== ''){} 
 }
-iteration1                             //end here because ite
-[(byLetter[4], nosave), (append(pi), save) ],
-[(byLetter[3], nosave), (append(pi), save) ],
-[(byLetter[2], nosave), (append(pi), save), (step(legalChars), nosave), (append(ite), save)],
-[(byLetter[1], nosave), (append(pi), save), (step(legalChars), nosave), (append(ite), save), (freeStep, save)],
-[col + 'pi'.length],
-[(prepend(pi), (step(legalChars), nosave), (append(ite), save), (freeStep, save), (freeStep, save)],
-[col + 'ite'.length],
-[prepend(ite), (freeStep, save), (freeStep, save), (freeStep, nosave), (append(n), save)]
+                       //end here because ite
+
+//Steps:
+//1) get the magic number and neighbor true/false (minByLetter means neigbor is true)
+//2) in or above minByLetter OR the forced function (touches a boardLetter but has no neighbor), we'll have a loop
+	//NOTE: each time we do this process, we begin with either forced() or minByLetter().
+	//In either of those functions, 
+		//1)a few variables are declared
+		//2)a queue of functions will be built
+		//3)the arguments they will need are determined
+		//4)we begin a loop counting down to 1, and a lot happens in each iteration.
+	//For each iteration of the loop, we will:
+		//a)
+//3) to clarify: we'll start with minByLetter(4, allowed, ...functionQueue) which means in that ONE call, 
+//we'll have a loop down to 1.
+//4) the first things we need beneath/inside the loop are: 
+	//a) a variable for our starting position (like col, starts at 0)
+	//b) the correct
+
+[(MinbyLetter[4], nosave), (append(pi), save) ],col++
+[(MinbyLetter[3], nosave), (append(pi), save) ],col++
+[(MinbyLetter[2], nosave), (append(pi), save), (step(legalChars), nosave), (append(ite), save)],col++
+[(MinbyLetter[1], nosave), (append(pi), save), (step(legalChars), nosave), (append(ite), save), (freeStep, save)],col++
+[col + 'pi'.length], col++
+[(prepend(pi), (step(legalChars), nosave), (append(ite), save), (freeStep, save), (freeStep, save)],col++
+[col + 'ite'.length],col++
+[prepend(ite), (freeStep, save), (freeStep, save), (freeStep, nosave), (append(n), save)],col++
+[ForceMin[2], (append(n), save), (freeStep, save)],col++
+[ForceMin[1], (append(n), save), (freeStep, save)],col++
+[col + 'n'.length],col++
+[prepend(n), (freeStep, save)]
+
+
 var testBoard = [    
 [" ", " ", " ", " ", "p", "i", " ", "i", "t", "e", " ", " ", " ", "n", " "], //0
 
@@ -239,161 +263,7 @@ function getData(board, row, hand) {
 	var wordString = '';
 	var spaceCount = 0;
 	var indexList = [];
-	var spaceList = [];
+	var spaceList = []; 
 	var liveList = [];
 	var liveArgs = {};
-	for ( var i = 0; i < board[row].length; i++ ) {
-		wordString += board[row][i];
-	
-		if ( board[row][i] === '' ) {
-			spaceCount++;
-			if ( wordListStr.length ) {
-				wordList.push(wordListStr)
-				wordListStr = '';
-			}
-			if ( (board[row-1] && board[row-1][i]) || (board[row+1] && board[row+1][i]) ) {
-				liveList.push(i);
-			}
-		} else {
-			if (spaceCount) spaceList.push(spaceCount)
-			spaceCount = 0;
-		    wordListStr += board[row][i];
-			if (wordListStr.length === 1) {
-				indexList.push(i);
-			}
-		}
-	}
-	if (spaceCount) spaceList.push(spaceCount)
- 	var skipRow = !indexList.length && !liveList.length ? true : false;
-	return { spaceList, indexList, wordList, liveList, skipRow }
-}
-
-function liveMinimum(board, row, col, data, hand, pointer) {
-	var { spaceList, indexList, wordList, liveList } = data;
-	var pointerCOPY = pointer; 
-	var magicNumber = pointer + 1;
-	let legalChars = getLegalChars(board, row, pointer);
-	var maybes = [];
-	//perhaps have an array of these set up
-	//the way we have wordList set up
-	for ( magicNumber; magicNumber > 0; magicNumber-- ) {
-		pointerCOPY = pointer;
-		var roots = [];
-		for ( let c of legalChars ) {
-			roots.concat(Treehash[magicNumber][c]);
-		}
-
-		//now that we have roots, add first letter.
-		//to add first letter, we must first check to see 
-		//which of the three possibilities the next space is
-		while ( roots.length ) {
-			if (indexList[0] === pointer + 1 + col){
-				var filterDatum = wordList[0]
-				roots = roots.reduce...
-				// if (tree.value) maybe.push(tree.value);
-				pointer += filterDatum.length;
-			} else if (liveList[0] === pointer + 1 + col) {
-				var allowed = getLegalChars(board, row, liveList[0], hand)
-				roots = liveFilter(roots, allowed);
-				pointer++;
-			} else {
-				roots = oneStep(roots);
-				pointer++;
-			}
-		}
-	}
-}
-function liveFilter(arr, allowed) {
-	return arr.reduce((list, {tree, remaining}) => {
-				for ( let legalChar of allowed ) {
-					if (tree[legalChar] && remaining.includes(legalChar)) {
-						list.concat({tree: tree[legalChar], remaining: excise(legalChar, remaining)})
-					}
-				}
-				return list;
-			}, [])
-}
-function getLegalChars(board, row, col, hand) {
-	let allowed = [];
-	let above = row ? upTrack(board, row, col) : ''
-	let below = row < 14 ? downTrack(board, row, col) : ''
-	for ( let c of hand ) {
-		if (takePaths(above, c, below)) allowed.push(c);
-	}
-	return allowed;
-}
-// var data = getData(testBoard, 0)
-
-for ( var row = 0; row < 15; row++ ) {
-	var data = getData(testBoard, row)
-	while (data.skipRow) {
-		row++;
-		data = getData(testBoard, row)
-	}
-	for ( var col = 0; col < 15; col++ ) {
-		data.liveList.map(x => x - col);
-		data.indexList.map(x => x - col);
-		//we do this to pretend that col is 0 no matter what
-		//relative to it as a starting point is min or "magicNumber"
-
-		if ( data.liveList[0] + 1 <= data.indexList[0] ) {
-			var pointer = data.liveList.shift();
-			liveMinimum(testBoard, row, col, data, pointer) //, pointer) ?
-			col += pointer + 1; //+1 necessary?
-		} else {
-			prependMinimum(testBoard, row, col, data);
-			data.indexList.shift();
-			col += data.wordList.shift().length;
-		}
-	}
-}
-
-
-
-
-
-//LOG DATA TO TAKE A LOOK AT WHAT IM DOING, THIS IMPLEMENTATION WILL WORK
-//LOG DATA TO TAKE A LOOK AT WHAT IM DOING, THIS IMPLEMENTATION WILL WORK
-
-//LOG DATA TO TAKE A LOOK AT WHAT IM DOING, THIS IMPLEMENTATION WILL WORK
-
-//LOG DATA TO TAKE A LOOK AT WHAT IM DOING, THIS IMPLEMENTATION WILL WORK
-
-//LOG DATA TO TAKE A LOOK AT WHAT IM DOING, THIS IMPLEMENTATION WILL WORK
-
-//LOG DATA TO TAKE A LOOK AT WHAT IM DOING, THIS IMPLEMENTATION WILL WORK
-//LOG DATA TO TAKE A LOOK AT WHAT IM DOING, THIS IMPLEMENTATION WILL WORK
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function constructRegex(data, c){
-  var {spaceList, indexList, wordList} = data;
-  var arrayConcat = [];
-  var regexConcat = `^\\w{0,${indexList[0]-1||0}}$`;
-  var startingSpaces = new RegExp(regexConcat);
-  arrayConcat.push(startingSpaces);
-  regexConcat = '^';
-  for (var i = 0; i < indexList.length; i++){
-    regexConcat += wordList[i] ? `\\w{${spaceList[i]}}${wordList[i]}` : ``;
-    if (i === indexList.length-1){
-      var regExtra = new RegExp(regexConcat+`(\\w{0,${spaceList[spaceList.length-1]}})?$`);
-      arrayConcat.push(regExtra);
-      return arrayConcat || /\w{1,9}/;
-    }
-    var regExtra = new RegExp(regexConcat+`(\\w{0,${spaceList[i+1]-1}})?$`);
-    arrayConcat.push(regExtra);
-  }
-}
-
-var arrayConcat = constructRegex(data, 0);
+	for ( var i = 0; 11111111111 11111133
