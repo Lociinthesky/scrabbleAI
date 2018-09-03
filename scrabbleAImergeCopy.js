@@ -101,8 +101,17 @@ function getMin(row, col = 0, board) {
 	}	 		
 	return min;
 }
-
-
+function zz(Treehash, hand){
+	var newArr = [];
+	for ( var i = 0; i < Treehash.length; i++) { 
+	  var obj = lastLetterBucket(hand)
+	  for ( let {tree, remaining} of Treehash[i].all ) {
+	  	obj[tree.last].push({tree, remaining});
+	  }
+	  newArr[i].push(obj);
+	}
+	return newArr;
+}
 function getSlice(board, row, col = 0) {
 	return board[row].slice(col, col + maxDepth + 1);
 }

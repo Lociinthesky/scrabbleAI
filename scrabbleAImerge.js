@@ -195,19 +195,20 @@ function updateAdjacentRequiredLetters(board, row, col) {
 	//a) a variable for our starting position (like col, starts at 0)
 	//b) the correct
 
-[(MinbyLetter[4], nosave), (append(pi), save) ],col++
-[(MinbyLetter[3], nosave), (append(pi), save) ],col++
-[(MinbyLetter[2], nosave), (append(pi), save), (step(legalChars), nosave), (append(ite), save)],col++
-[(MinbyLetter[1], nosave), (append(pi), save), (step(legalChars), nosave), (append(ite), save), (freeStep, save)],col++
-[col + 'pi'.length], col++
-[(prepend(pi), (step(legalChars), nosave), (append(ite), save), (freeStep, save), (freeStep, save)],col++
-[col + 'ite'.length],col++
-[prepend(ite), (freeStep, save), (freeStep, save), (freeStep, nosave), (append(n), save)],col++
-[ForceMin[2], (append(n), save), (freeStep, save)],col++
-[ForceMin[1], (append(n), save), (freeStep, save)],col++
-[col + 'n'.length],col++
-[prepend(n), (freeStep, save)]
+// [(MinbyLetter[4], nosave), (append(pi), save) ],col++
+// [(MinbyLetter[3], nosave), (append(pi), save) ],col++
+// [(MinbyLetter[2], nosave), (append(pi), save), (step(legalChars), nosave), (append(ite), save)],col++
+// [(MinbyLetter[1], nosave), (append(pi), save), (step(legalChars), nosave), (append(ite), save), (freeStep, save)],col++
+// [col + 'pi'.length], col++
+// [(prepend(pi), (step(legalChars), nosave), (append(ite), save), (freeStep, save), (freeStep, save)],col++
+// [col + 'ite'.length],col++
+// [prepend(ite), (freeStep, save), (freeStep, save), (freeStep, nosave), (append(n), save)],col++
+// [ForceMin[2], (append(n), save), (freeStep, save)],col++
+// [ForceMin[1], (append(n), save), (freeStep, save)],col++
+// [col + 'n'.length],col++
+// [prepend(n), (freeStep, save)]
 
+// minByLetter
 
 var testBoard = [    
 [" ", " ", " ", " ", "p", "i", " ", "i", "t", "e", " ", " ", " ", "n", " "], //0
@@ -257,13 +258,122 @@ var testBoard = [
 //ONE CURRENT PROBLEM:
 //if the played letter and neighbor are far to the right, more than 8 spaces,
 //I have not handled those eventualities yet
+
+
+
 function getData(board, row, hand) {
 	var wordList = [];
 	var wordListStr = '';
 	var wordString = '';
 	var spaceCount = 0;
 	var indexList = [];
-	var spaceList = []; 
+	var spaceList = [];
 	var liveList = [];
 	var liveArgs = {};
-	for ( var i = 0; 11111111111 11111133
+	for ( var i = 0; i < board[row].length; i++ ) {
+		wordString += board[row][i];
+	
+		if ( board[row][i] === '' ) {
+			spaceCount++;
+			if ( wordListStr.length ) {
+				wordList.push(wordListStr)
+				wordListStr = '';
+			}
+			if ( (board[row-1] && board[row-1][i]) || (board[row+1] && board[row+1][i]) ) {
+				liveList.push(i);
+			}
+		} else {
+			if (spaceCount) spaceList.push(spaceCount)
+			spaceCount = 0;
+		    wordListStr += board[row][i];
+			if (wordListStr.length === 1) {
+				indexList.push(i);
+			}
+		}
+	}
+	if (spaceCount) spaceList.push(spaceCount)
+ 	var skipRow = !indexList.length && !liveList.length ? true : false;
+	return { spaceList, indexList, wordList, liveList, skipRow }
+}
+
+function liveMinimum(board, row, col, data, hand, pointer) {
+	var { spaceList, indexList, wordList, liveList } = data;
+	var pointerCOPY = pointer; 
+	var magicNumber = pointer + 1;
+	let legalChars = getLegalChars(board, row, pointer);
+	var maybes = [];
+	//perhaps have an array of these set up
+	//the way we have wordList set up
+	for ( magicNumber; magicNumber > 0; magicNumber-- ) {
+		pointerCOPY = pointer;
+		var roots = [];
+		for ( let c of legalChars ) {
+			roots.concat(Treehash[magicNumber][c]);
+		}
+
+		//now that we have roots, add first letter.
+		//to add first letter, we must first check to see 
+		//which of the three possibilities the next space is
+		while ( roots.length ) {
+			if (indexList[0] === pointer + 1 + col){
+				var filterDatum = wordList[0]
+				roots = roots.reduce...
+				// if (tree.value) maybe.push(tree.value);
+				pointer += filterDatum.length;
+			} else if (liveList[0] === pointer + 1 + col) {
+				var allowed = getLegalChars(board, row, liveList[0], hand)
+				roots = liveFilter(roots, allowed);
+				pointer++;
+			} else {
+				roots = oneStep(roots);
+				pointer++;
+			}
+		}
+	}
+}
+function liveFilter(arr, allowed) {
+	return arr.reduce((list, {tree, remaining}) => {
+				for ( let legalChar of allowed ) {
+					if (tree[legalChar] && remaining.includes(legalChar)) {
+						list.concat({tree: tree[legalChar], remaining: excise(legalChar, remaining)})
+					}
+				}
+				return list;
+			}, [])
+}
+function getLegalChars(board, row, col, hand) {
+	let allowed = [];
+	let above = row ? upTrack(board, row, col) : ''
+	let below = row < 14 ? downTrack(board, row, col) : ''
+	for ( let c of hand ) {
+		if (takePaths(above, c, below)) allowed.push(c);
+	}
+	return allowed;
+}
+// var data = getData(testBoard, 0)
+
+for ( var row = 0; row < 15; row++ ) {
+	var data = getData(testBoard, row)
+	while (data.skipRow) {
+		row++;
+		data = getData(testBoard, row)
+	}
+	for ( var col = 0; col < 15; col++ ) {
+		data.liveList.map(x => x - col);
+		data.indexList.map(x => x - col);
+		//we do this to pretend that col is 0 no matter what
+		//relative to it as a starting point is min or "magicNumber"
+
+		if ( data.liveList[0] + 1 <= data.indexList[0] ) {
+			var pointer = data.liveList.shift();
+			liveMinimum(testBoard, row, col, data, pointer) //, pointer) ?
+			col += pointer + 1; //+1 necessary?
+		} else {
+			prependMinimum(testBoard, row, col, data);
+			data.indexList.shift();
+			col += data.wordList.shift().length;
+		}
+	}
+}
+
+
