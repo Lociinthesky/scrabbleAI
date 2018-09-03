@@ -5,6 +5,7 @@ var dictABC = ['aa','aah','aahed','aahing','aahs','aal','aalii','aaliis','aals',
 var alphabet = 'abcdefghijklmnopqrstuvwxyz';
 var maxDepth = 8;
 var n = 15;
+var hand = 'abcderg';
 var emptyRow = Array(15).fill(' ')
 var emptyBoard = Array(15).fill(emptyRow).map(r => r.slice())
 var emptyBoardData = Array(15).fill(emptyRow).map(r => r = {})
@@ -79,7 +80,7 @@ function buildHashes(tree, hand) {
   return Treehash 
 }
 								var Dictree = new DictionaryTree('', dict)
-								var Treehash = buildHashes(Dictree, 'abcderg', 8)
+								var Treehash = buildHashes(Dictree, hand, 8)
 								var byLetter = zz(Treehash, hand);
 
 function zz(Treehash, hand) {
@@ -208,14 +209,61 @@ function updateAdjacentRequiredLetters(board, row, col) {
 // [col + 'n'.length],col++
 // [prepend(n), (freeStep, save)]
 
-// minByLetter
+// minByLetter, i == magicNum.
+//pointer = 0;
 
+//as we iterate thru, we ask for each space:
+  //
+var sampleData = {
+	indexList: [4, 7, 13],
+	liveList: [3, 6],
+	skipRow: false,
+	spaceList: [4, 1, 3, 1],
+	wordList: ["pi", "ite", "n"]
+}
+for ( var row = 0; row < n; row++ ) {
+	if ( board[row][0] != '' ) {
+		forcedPrepend();
+		adjust pointer accordingly
+	} else {
+				var row = board[row].slice(pointer)
+				if ( board[row][] != '' )
+		pointer = 0;
+	}
+
+	for ( var col = 0; col < n; col++ ) {
+		//stable info to grab outside of minByLetter()
+				//magic number, pointer,
+
+	}
+}
+
+
+
+function constructRegex(spaceList, indexList, wordList, c){
+  var arrayConcat = [];
+  var regexConcat = `^\\w{0,${indexList[0]-1||0}}$`;
+  var startingSpaces = new RegExp(regexConcat);
+  arrayConcat.push(startingSpaces);
+  regexConcat = '^';
+  for (var i = 0; i < indexList.length; i++){
+    regexConcat += wordList[i] ? `\\w{${spaceList[i]}}${wordList[i]}` : ``;
+    if (i === indexList.length-1){
+      var regExtra = new RegExp(regexConcat+`(\\w{0,${spaceList[spaceList.length-1]}})?$`);
+      arrayConcat.push(regExtra);
+      return arrayConcat || /\w{1,9}/;
+    }
+    var regExtra = new RegExp(regexConcat+`(\\w{0,${spaceList[i+1]-1}})?$`);
+    arrayConcat.push(regExtra);
+  }
+}
+	
 var testBoard = [    
 [" ", " ", " ", " ", "p", "i", " ", "i", "t", "e", " ", " ", " ", "n", " "], //0
 
 [" ", " ", " ", "w", "a", " ", "e", "s", " ", "t", " ", " ", " ", "o", " "], //1
 
-[" ", " ", " ", "i", " ", " ", "e", " ", " ", " ", "a", "l", "m", "s", " "], //2
+[" ", " ", " ", "i", " ", " ", "e", ." ", " ", " ", "a", "l", "m", "s", " "], //2
 
 [" ", " ", " ", "n", " ", " ", "l", " ", " ", "a", "w", " ", " ", "e", " "], //3
 
@@ -286,7 +334,7 @@ function getData(board, row, hand) {
 			if (spaceCount) spaceList.push(spaceCount)
 			spaceCount = 0;
 		    wordListStr += board[row][i];
-			if (wordListStr.length === 1) {
+			if (wordListStr.length === 1) { 
 				indexList.push(i);
 			}
 		}
