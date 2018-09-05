@@ -234,8 +234,10 @@ function getLegalChars(board, row, col, hand) {
 	return allowed;
 }
 function getRoots(board, row, col, legalChars) {
-	var len;
+	var len;     
 	var roots = [];
+	//what this means is that now our roots are all mixed together
+	
 	for ( let c of legalChars ) {
 		len = col + 2;
 		while ( --len ) {
