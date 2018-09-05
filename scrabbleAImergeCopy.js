@@ -178,6 +178,30 @@ function getTree(path){
 function updateAdjacentRequiredLetters(board, row, col) {
 	if (board[row][col - 1] && board[row][col - 1] !== ''){} 
 }
+function pointerPlusIsLetter(row, pointer, roots) {
+
+}
+
+function getRoots(board, row, col, legalChars) {
+	var len;
+	var roots = [];
+	for ( let c of legalChars ) {
+		len = col + 2;
+		while ( --len ) {
+			roots.concat(Treehash[len][c]);
+		}				
+	}	
+}
+va
+for ( var row = 0; row < n; row++ ) {
+	for ( var col = 0; col < n; col++ ) {
+		if (hasNeighbor(board, row, col)) {
+			let legalChars = getLegalChars(board, row, col, hand);
+			let roots = getRoots(board, row, col, legalChars)
+		} 
+	}
+}
+
 var testBoard = [    
 [" ", " ", " ", " ", "p", "i", " ", "i", "t", "e", " ", " ", " ", "n", " "], //0
 
@@ -306,15 +330,15 @@ function liveFilter(arr, allowed) {
 				return list;
 			}, [])
 }
-function getLegalChars(board, row, col, hand) {
-	let allowed = [];
-	let above = row ? upTrack(board, row, col) : ''
-	let below = row < 14 ? downTrack(board, row, col) : ''
-	for ( let c of hand ) {
-		if (takePaths(above, c, below)) allowed.push(c);
-	}
-	return allowed;
-}
+// function getLegalChars(board, row, col, hand) {
+// 	let allowed = [];
+// 	let above = row ? upTrack(board, row, col) : ''
+// 	let below = row < 14 ? downTrack(board, row, col) : ''
+// 	for ( let c of hand ) {
+// 		if (takePaths(above, c, below)) allowed.push(c);
+// 	}
+// 	return allowed;
+// }
 // var data = getData(testBoard, 0)
 
 for ( var row = 0; row < 15; row++ ) {

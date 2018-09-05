@@ -223,8 +223,16 @@ var sampleData = {
 	wordList: ["pi", "ite", "n"]
 }
 
-(append(pi), save), (step(legalChars), nosave), (append(ite), save), (freeStep, save)
-
+// (append(pi), save), (step(legalChars), nosave), (append(ite), save), (freeStep, save)
+function getLegalChars(board, row, col, hand) {
+	let allowed = [];
+	let above = row ? upTrack(board, row, col) : ''
+	let below = row < 14 ? downTrack(board, row, col) : ''
+	for ( let c of hand ) {
+		if (takePaths(above, c, below)) allowed.push(c);
+	}
+	return allowed;
+}
 function getRoots(board, row, col, legalChars) {
 	var len;
 	var roots = [];
@@ -236,6 +244,7 @@ function getRoots(board, row, col, legalChars) {
 	}
 	return roots;
 }
+
 for ( var row = 0; row < n; row++ ) {
 	var count = 0;
 	for ( var col = 0; col < n; col++ ) {
@@ -289,7 +298,7 @@ var testBoard = [
 //most importantly, the indices of played words (and those words)
 //and the indices of neighbors.
 //starting at col 0, we see what is nearer -- a neighbor, or a played letter?
-//depending which, we apply slightly different implementations.
+//depending which, we apply slightly different implementations. 
 //in either case, we iterate up toward it _inside of its implementation function
 //afterward, we boost the value of column up several spaces at once,
 //since they have already been iterated through.
@@ -367,8 +376,7 @@ function liveMinimum(board, row, col, data, hand, pointer) {
 				pointer++;
 			}
 		}
-	}
-}
+
 function liveFilter(arr, allowed) {
 	return arr.reduce((list, {tree, remaining}) => {
 				for ( let legalChar of allowed ) {
@@ -379,15 +387,7 @@ function liveFilter(arr, allowed) {
 				return list;
 			}, [])
 }
-function getLegalChars(board, row, col, hand) {
-	let allowed = [];
-	let above = row ? upTrack(board, row, col) : ''
-	let below = row < 14 ? downTrack(board, row, col) : ''
-	for ( let c of hand ) {
-		if (takePaths(above, c, below)) allowed.push(c);
-	}
-	return allowed;
-}
+
 // var data = getData(testBoard, 0)
 
 for ( var row = 0; row < 15; row++ ) {
@@ -395,6 +395,7 @@ for ( var row = 0; row < 15; row++ ) {
 	while (data.skipRow) {
 		row++;
 		data = getData(testBoard, row)
+		if ( row > 15 ) return;
 	}
 	for ( var col = 0; col < 15; col++ ) {
 		data.liveList.map(x => x - col);
