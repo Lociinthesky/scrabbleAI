@@ -9,6 +9,7 @@ var emptyRow = Array(15).fill(' ')
 var emptyBoard = Array(15).fill(emptyRow).map(r => r.slice())
 var emptyBoardData = Array(15).fill(emptyRow).map(r => r = {})
 var requiredLetters = Array(15).fill(emptyRow).map(r => r = []);
+var hand = 'abcderg';
 
 function boardDataConstructor() {
 	var board = [];
@@ -87,7 +88,23 @@ function buildHashes(tree, hand) {
   return Treehash
 }
 								var Dictree = new DictionaryTree('', dict, '')
-								var Treehash = buildHashes(Dictree, 'abcderg', 8)
+								var Treehash = buildHashes(Dictree, hand, 8)
+
+								var byLetter = zz(Treehash, hand);
+
+function zz(Treehash, hand) {
+	var newArr = [];
+	for ( var i = 0; i < Treehash.length; i++ ) {
+	var obj = {}
+		if (Array.isArray(Treehash[i])) {
+			for ( let c of hand ) {
+				obj[c] = Treehash[i].filter(x => x.tree.last === c);
+			}
+		}
+		newArr[i] = obj;
+	}
+	return newArr;
+}
 
 function getMin(row, col = 0, board) {
 	let min = -1;
@@ -190,17 +207,22 @@ function getRoots(board, row, col, legalChars) {
 		while ( --len ) {
 			roots.concat(Treehash[len][c]);
 		}				
-	}	
+	}
+	return roots;
 }
-va
 for ( var row = 0; row < n; row++ ) {
 	for ( var col = 0; col < n; col++ ) {
 		if (hasNeighbor(board, row, col)) {
 			let legalChars = getLegalChars(board, row, col, hand);
-			let roots = getRoots(board, row, col, legalChars)
+			var roots = getRoots(board, row, col, legalChars)
 		} 
 	}
 }
+
+var miniBoard = [[" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "], //0
+
+[" ", " ", " ", "w", "a", " ", "e", "s", " ", "t", " ", " ", " ", "o", " "]];
+
 
 var testBoard = [    
 [" ", " ", " ", " ", "p", "i", " ", "i", "t", "e", " ", " ", " ", "n", " "], //0
