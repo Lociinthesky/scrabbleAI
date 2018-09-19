@@ -98,9 +98,10 @@ function zz(Treehash, hand) {
 								var byLetter = zz(Treehash, hand);
 
 
-function getMin(row, col = 0, board) {
+function getMin(board, row, col = 0) {
 	let min = -1;
 	var trackWord = '';
+	row = board[row].slice(col)
 	let rowAbove = ( row > 0 ) ? board[row-1] : []
 	let rowBelow = ( row < n - 1 ) ? board[row+1] : [] 
 	for ( let i = 0; i < maxDepth; i++) {
@@ -110,6 +111,27 @@ function getMin(row, col = 0, board) {
 	}	 		
 	return min;
 }
+
+// function getMinAndType(board, row, col = 0) {
+// 	let min = 0;
+// 	var trackWord = '';
+// 	for ( var column = col; column <= col+7; column++) {
+// 		if (board[row-1] && board[row-1][column]) 
+// 			min = column;
+// 			type = 'prepend';
+// 			return {min, type};
+// 		}
+		
+// 	}
+	
+// 	let rowBelow = ( row < n - 1 ) ? board[row+1] : [] 
+// 	for ( let i = 0; i < maxDepth; i++) {
+// 		if ( rowAbove[i] | rowBelow[i] ) {
+// 			return i;
+// 		}
+// 	}	 		
+// 	return min;
+// }
 
 
 function getSlice(board, row, col = 0) {
@@ -224,6 +246,67 @@ var sampleData = {
 }
 
 // (append(pi), save), (step(legalChars), nosave), (append(ite), save), (freeStep, save)
+
+
+//1) get neighbored (unoccupied) spaces for the entire row.
+//2) (for the first column first) get minimum length
+//3) retrieve the initial roots
+//4) (for simplicity) use just one root for this fn.  Then, we will map this fn onto all roots.
+//UNTESTED
+function getUpstairsNeighbors(board, row) {
+	if ( row === 0 ) return [];
+	var rowToCheck = board[row - 1];
+	var neighbors = [];
+	for ( let col = 0; col < 15; col++ ) {
+		if (board[row][col] === '' && rowToCheck[col] !== '') {
+			neighbors.push(col);
+		}
+	}
+	return neighbors;
+}
+
+//UNTESTED
+
+function getDownstairsNeighbors(board, row) {
+	if ( row === 14 ) return [];
+	var rowToCheck = board[row + 1];
+	var neighbors = [];
+	for ( let col = 0; col < 15; col++ ) {
+		if (board[row][col] === '' && rowToCheck[col] !== '') {
+			neighbors.push(col);
+		}
+	}
+	return neighbors;
+}
+//UNTESTED
+function findRowNeighbors(board, row) {
+	var deduped = [];
+	var neighborsAndDupes = [...getDownstairsNeighbors(board, row), ...getUpstairsNeighbors(board, row)].sort()
+		neighborsAndDupes.forEach((value, idx) => {
+			if (idx < neighborsAndDupes.length && value !== neighborsAndDupes[idx + 1] ) {
+				deduped.push(value)
+			}
+		});
+	return deduped; 
+}
+//1)
+var neighborIndices = findRowNeighbors(board, row);
+//------------------------------------------------
+//UNTESTED
+//2)
+function getMinimumLength(col, neighborIndices) {
+	let minLength = -1
+	for ( let i = 0; i < neighborIndices.length; i++ ) {
+		if ( neighborIndices[i] === col ) {
+			return 1;
+		} else if ( neighborIndices[i] > col ) {
+			return neighborIndices[i] - col + 1;
+		}
+	}
+	return 0;
+}
+//----------------------------------------------------
+//3)
 function getLegalChars(board, row, col, hand) {
 	let allowed = {};
 	let above = row ? upTrack(board, row, col) : ''
@@ -233,32 +316,36 @@ function getLegalChars(board, row, col, hand) {
 	}
 	return allowed;
 }
-function getRoots(board, row, col, legalChars) {
-	var len;     
+//UNTESTED
+function getRoots(minLength, legalChars) {  
 	var roots = [];
-	//what this means is that now our roots are all mixed together
-
-	for ( let c of legalChars ) {
-		len = col + 2;
-		while ( --len ) {
-			roots.concat(Treehash[len][c]);
+	for ( let c in legalChars ) {
+			roots.concat(Treehash[minLength][c]);
 		}				
 	}
 	return roots;
 }
-
-// for ( var row = 0; row < n; row++ ) {
-// 	var count = 0;
-// 	for ( var col = 0; col < n; col++ ) {
-// 		if (hasNeighbor(board, row, col)) {
-// 			let legalChars = getLegalChars(board, row, col, hand);
-// 			var roots = getRoots(board, row, col, legalChars) 
-// 			//if (board[col][row] != '')
-// 		} 
-// 	}
-// }
-
-	
+var minLength = getMinimumLength(col, neighborIndices);
+var legalChars = getLegalChars(board, row, col, hand)
+var roots = getRoots(minLength, legalChars);
+//------------------------------------------------------------------------------------------------
+//UNTESTED
+function collectAllViableWords(board, row, col, roots, minLength) {
+	var viableWords = [];
+	var wordToAppend = '';
+	var nextIndex = col + minLength;
+	if ( board[row][nextIndex] === '' ) {
+		viableWords.concat(saveWords(roots));
+		roots = stepForward(roots)
+		nextIndex++;
+	} else {
+		wordToAppend = forwardTrack(board, row, nextIndex);
+		nextIndex += wordToAppend.length
+		roots = appendRoots(roots, wordToAppend);
+		viableWords.concat(saveWords(roots));	
+	}
+	return viableWords;
+}
 var testBoard = [    
 [" ", " ", " ", " ", "p", "i", " ", "i", "t", "e", " ", " ", " ", "n", " "], //0
 
@@ -310,40 +397,40 @@ var testBoard = [
 
 
 
-// function getData(board, row, hand) {
-// 	var wordList = [];
-// 	var wordListStr = '';
-// 	var wordString = '';
-// 	var spaceCount = 0;
-// 	var indexList = [];
-// 	var spaceList = [];
-// 	var liveList = [];
-// 	var liveArgs = {};
-// 	for ( var i = 0; i < board[row].length; i++ ) {
-// 		wordString += board[row][i];
+function getData(board, row, hand) {
+	var wordList = [];
+	var wordListStr = '';
+	var wordString = '';
+	var spaceCount = 0;
+	var indexList = [];
+	var spaceList = [];
+	var liveList = [];
+	var liveArgs = {};
+	for ( var i = 0; i < board[row].length; i++ ) {
+		wordString += board[row][i];
 	
-// 		if ( board[row][i] === '' ) {
-// 			spaceCount++;
-// 			if ( wordListStr.length ) {
-// 				wordList.push(wordListStr)
-// 				wordListStr = '';
-// 			}
-// 			if ( (board[row-1] && board[row-1][i]) || (board[row+1] && board[row+1][i]) ) {
-// 				liveList.push(i);
-// 			}
-// 		} else {
-// 			if (spaceCount) spaceList.push(spaceCount)
-// 			spaceCount = 0;
-// 		    wordListStr += board[row][i];
-// 			if (wordListStr.length === 1) { 
-// 				indexList.push(i);
-// 			}
-// 		}
-// 	}
-// 	if (spaceCount) spaceList.push(spaceCount)
-//  	var skipRow = !indexList.length && !liveList.length ? true : false;
-// 	return { spaceList, indexList, wordList, liveList, skipRow }
-// }
+		if ( board[row][i] === '' ) {
+			spaceCount++;
+			if ( wordListStr.length ) {
+				wordList.push(wordListStr)
+				wordListStr = '';
+			}
+			if ( (board[row-1] && board[row-1][i]) || (board[row+1] && board[row+1][i]) ) {
+				liveList.push(i);
+			}
+		} else {
+			if (spaceCount) spaceList.push(spaceCount)
+			spaceCount = 0;
+		    wordListStr += board[row][i];
+			if (wordListStr.length === 1) { 
+				indexList.push(i);
+			}
+		}
+	}
+	if (spaceCount) spaceList.push(spaceCount)
+ 	var skipRow = !indexList.length && !liveList.length ? true : false;
+	return { spaceList, indexList, wordList, liveList, skipRow }
+}
 
 // function liveMinimum(board, row, col, data, hand, pointer) {
 // 	var { spaceList, indexList, wordList, liveList } = data;
