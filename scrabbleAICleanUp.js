@@ -317,32 +317,40 @@ function getLegalChars(board, row, col, hand) {
 	return allowed;
 }
 //UNTESTED
-function getRoots(minLength, legalChars) {  
+function getRootsFromTreehash(minLength, legalChars) {  
+	//this applies IF AND ONLY IF legalChars exists at all.
 	var roots = [];
 	for ( let c in legalChars ) {
-			roots.concat(Treehash[minLength][c]);
-		}				
+		roots.concat(Treehash[minLength][c]);
 	}
 	return roots;
 }
 var minLength = getMinimumLength(col, neighborIndices);
 var legalChars = getLegalChars(board, row, col, hand)
-var roots = getRoots(minLength, legalChars);
+var roots = getRoots(minLength, legalChars);    
 //------------------------------------------------------------------------------------------------
+function stepForward(board, row, col, roots, minLength) {
+	//step forward by one, adding (each) single letter of "remaining" to each root
+	var nextIndex = col + minLength;
+	//if board[row][nextIndex] is neighbored, filter roots accordingly (while saving words)
+	//finally, return [roots, wordsAtStep]
+}
 //UNTESTED
 function collectAllViableWords(board, row, col, roots, minLength) {
 	var viableWords = [];
 	var wordToAppend = '';
 	var nextIndex = col + minLength;
-	if ( board[row][nextIndex] === '' ) {
-		viableWords.concat(saveWords(roots));
-		roots = stepForward(roots)
-		nextIndex++;
-	} else {
-		wordToAppend = forwardTrack(board, row, nextIndex);
-		nextIndex += wordToAppend.length
-		roots = appendRoots(roots, wordToAppend);
-		viableWords.concat(saveWords(roots));	
+	while (roots.length) {
+		if ( board[row][nextIndex] === '' ) {
+			[roots, wordsAtStep] = stepForward(roots)
+			viableWords.concat(wordsAtStep);
+			nextIndex++;
+		} else {
+			wordToAppend = forwardTrack(board, row, nextIndex);
+			nextIndex += wordToAppend.length
+			[roots, wordsAtStep] = appendRoots(roots, wordToAppend);
+			viableWords.concat(wordsAtStep);	
+		}
 	}
 	return viableWords;
 }
