@@ -155,7 +155,6 @@ function downTrack(board, row, col = 0) {
 		str += board[row][col];
 		row++;
 	}
-	console.log('pre-return')
 	return str.trim()
 }
 
@@ -172,11 +171,8 @@ function rightTrack(board, row, col = 0) {
 function takePaths(...substrings) {
   var node = Dictree;
   for ( let str of substrings ) {
-  	console.log(`str of substr: ${str}`)
 		for ( let c of str ) {
-			console.log(`c of str: ${c}`)
 			if ( node[c]) {
-			console.log(`node[c]: ${JSON.stringify(node[c])}`)
                node = node[c]
             } else {
                return null;
@@ -289,25 +285,33 @@ function getLegalProfile(board, row, hand) {
 
 //1)
 var neighborProfile = getNeighborProfile(board, row); 
-var neighborIndices = findRowNeighbors(board, row);
+
 //------------------------------------------------
-//BROKEN
 //2)
-function getMinimumLength(col, neighborIndices) {
-	for ( let i = 0; i < neighborIndices.length; i++ ) {
-		if ( neighborIndices[i] === col ) {
-			return 1;
-		} else if ( neighborIndices[i] > col ) {
-			return neighborIndices[i] - col + 1;
-		} 
-	}
-	return 0;
+// function getMinimumLength(col, neighborProfile) {
+// 	var neighborIndices = Object.keys(neighborProfile).sort();
+// 	for ( let i = 0; i < neighborIndices.length; i++ ) {
+// 		if ( neighborIndices[i] >= col ) {
+// 			return neighborIndices[i] - col + 1
+// 		} 
+// 	}
+// 	return 0
+// }  
+
+// above (which works) should be identical to:
+
+function getMinimumLength(col, neighborProfile) {
+	var neighborIndices = Object.keys(neighborProfile).sort();
+	for ( let idx of neighborIndices ) {
+		if ( idx >= col ) return idx - col + 1
+	} 
+	return 0
 }
 //----------------------------------------------------
 //3)
 function getLegalChars(board, row, col, hand) {
 	let allowed = {};
-	let above = row ? upTrack(board, row, col) : ''
+	let above = row ? upTrack(board, row, col) : '' //should have these in neighborProfile instead of just "true" 
 	let below = row < 14 ? downTrack(board, row, col) : ''
 	for ( let c of hand ) {
 		if (takePaths(above, c, below)) allowed[c] = true;
@@ -315,7 +319,7 @@ function getLegalChars(board, row, col, hand) {
 	return allowed;
 }       
 
-//UNTESTED
+//UNTESTED 
 function getRootsFromTreehash(minLength, legalChars) {  
 	//this applies IF AND ONLY IF legalChars exists at all.
 	var roots = [];

@@ -31,7 +31,7 @@ var DictionaryTree = function(path, dict){
 	  this.path = path;
 	  this.depth = path.length;
 	  this.wordChildren = [];  //keep track of the letters which, when appended to path, create a word.
-	  if ( dict[0] 	=== path ) {
+	  if ( dict[0] === path ) {
 	    this.value = dict.shift();
 	  }
 	  while (dict[0] && dict[0].startsWith(path)) {
@@ -164,6 +164,20 @@ function takePaths(...substrings) {
 function updateAdjacentRequiredLetters(row, col, board) {
 	if (board[row][col - 1] && board[row][col - 1] !== ''){} 
 }
+
+function pointerPlusIsLetter(row, pointer, roots) {
+
+}
+for ( var row = 0; row < n; row++ ) {
+	for ( var col = 0; col < n; col++ ) {
+
+		if (hasNeighbor(board, row, col)) {
+			let legalChars = getLegalChars(board, row, col);
+		} 
+
+	}
+}
+
 var testBoard = [    
 [" ", " ", " ", " ", "p", "i", " ", "i", "t", "e", " ", " ", " ", "n", " "], //0
 

@@ -70,7 +70,7 @@ function queryTree(tree, remaining, Treehash) {
 function buildHashes(tree, hand) {
   var Treehash = [];
   for ( var i = 0; i <= maxDepth+1; i++ ) {
-  		Treehash[i] = Object.create(lastLetterBucket(hand));
+  		Treehash[i] = lastLetterBucket(hand);
   }         
   hand = [...hand];
   queryTree(tree, hand, Treehash)

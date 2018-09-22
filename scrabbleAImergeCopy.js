@@ -87,7 +87,7 @@ function buildHashes(tree, hand) {
   queryTree(tree, hand, Treehash)
   return Treehash
 }
-								var Dictree = new DictionaryTree('', dict, '')
+								var Dictree = new DictionaryTree('', dictABC, '')
 								var Treehash = buildHashes(Dictree, hand, 8)
 
 								var byLetter = zz(Treehash, hand);
