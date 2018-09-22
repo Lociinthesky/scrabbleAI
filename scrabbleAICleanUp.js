@@ -281,9 +281,9 @@ function getDownstairsNeighbors(board, row) {
 //UNTESTED
 function findRowNeighbors(board, row) {
 	var deduped = [];
-	var neighborsAndDupes = [...getDownstairsNeighbors(board, row), ...getUpstairsNeighbors(board, row)].sort()
+	var neighborsAndDupes = [...getDownstairsNeighbors(board, row), ...getUpstairsNeighbors(board, row)].sort();
 		neighborsAndDupes.forEach((value, idx) => {
-			if (idx < neighborsAndDupes.length && value !== neighborsAndDupes[idx + 1] ) {
+			if (idx < neighborsAndDupes.length - 1 && value !== neighborsAndDupes[idx + 1] ) {
 				deduped.push(value)
 			}
 		});
@@ -327,7 +327,7 @@ function getRootsFromTreehash(minLength, legalChars) {
 }
 var minLength = getMinimumLength(col, neighborIndices);
 var legalChars = getLegalChars(board, row, col, hand)
-var roots = getRoots(minLength, legalChars);    
+var roots = getRootsFromTreehash(minLength, legalChars);    
 //------------------------------------------------------------------------------------------------
 function stepForward(board, row, col, roots, minLength) {
 	//step forward by one, adding (each) single letter of "remaining" to each root
