@@ -183,42 +183,78 @@ function getTree(path, startingNode = Dictree){
 	return node;
 }
 
- 
+var neighborProfile = {};
+var playedLettersProfile = {};
+var legalLettersProfile = {};
+var unoccupiedSpaces = {};
 function getLegalLetters(board, hand) {
 	hand = [...hand];
-	let legalLettersProfile = {};
 	for ( var row = 0; row < 15; row++ ) {
+		neighborProfile[row] = [];
+		playedLettersProfile[row] = [];
+		unoccupiedSpaces[row] = {};
 		let rowProfile = {}
 		let above = (row === 0 ) ? [] : board[row - 1]
 		let below = (row === 14) ? [] : board[row + 1]	 
 		for ( let col = 0; col < 15; col++ ) {
 			if (board[row][col]) {
+				playedLettersProfile[row].push(col);
 				continue;
-			} else if (above[col] || below[col]) { 
-				rowProfile[col] = hand.filter(char => {
-					var nodeOrNull = takePaths(upTrack(board, row, col), char, downTrack(board, row, col))
-					return nodeOrNull && nodeOrNull.value;
-				})
 			} else {
-				rowProfile[col] = hand;
+				unoccupiedSpaces[row][col] = true;
+				if (above[col] || below[col]) { 
+					neighborProfile[row].push(col);
+					rowProfile[col] = hand.filter(char => {
+						var nodeOrNull = takePaths(upTrack(board, row, col), char, downTrack(board, row, col))
+						return nodeOrNull && nodeOrNull.value;
+					})
+				} else {
+					rowProfile[col] = hand;
+				}
 			}
 		}
 		legalLettersProfile[row] = rowProfile;
 	}
-	return legalLettersProfile; 
+	// return legalLettersProfile; 
 }
 
-//------------------------------------------------
-//2)
-function getMinimumLength(col, neighborProfile) {
-	var neighborIndices = Object.keys(neighborProfile).sort();
+function getMinLengthAndFunctionType(board, row, col) {
+	if ( board[row][col-1] ) return {min: 1, type: 'append'}
+	var result = {min: 16, type: null};
+	var neighborIndices = neighborProfile[row];
+	var playedIndices = playedLettersProfile[row];
+	var neighborMin = 0;
 	for ( let i = 0; i < neighborIndices.length; i++ ) {
 		if ( neighborIndices[i] >= col ) {
-			return neighborIndices[i] - col + 1
+			result.min = neighborIndices[i] - col + 1; 
+			result.type = 'neighbor';
+			break;
 		} 
 	}
-	return 0
+	for ( let i = 0; i < playedIndices.length; i++ ) {
+		if ( playedIndices[i] > col && playedIndices[i] < result.min) {
+			result.min = playedIndices[i] - col;
+			result.type = 'prepend';
+			break;
+		}
+	}
+	if ( result.min < 8 ) {
+		console.log(`llProf[row]: ${JSON.stringify(legalLettersProfile[row])},
+			col: ${col},
+			result.min: ${result.min}`)
+		result.restricedEndLetters = legalLettersProfile[row][col + result.min - 1]
+	}
+	return result;
 }  
+
+function putArgsInPlace(board, hand){
+	getLegalLetters(board, hand);
+	for ( var row in unoccupiedSpaces ) {
+		for ( var col in unoccupiedSpaces[row] ) {
+			unoccupiedSpaces[row][col] = getMinLengthAndFunctionType(board, row, col);
+		}
+	}	
+}
 
 // above (which works) should be identical to:
 
