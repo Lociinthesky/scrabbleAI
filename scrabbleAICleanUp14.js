@@ -98,23 +98,6 @@ function zz(Treehash, hand) {
 								var byLetter = zz(Treehash, hand);
 
 
-function getMin(board, row, col = 0) {
-	let min = -1;
-	var trackWord = '';
-	row = board[row].slice(col)
-	let rowAbove = ( row > 0 ) ? board[row-1] : []
-	let rowBelow = ( row < n - 1 ) ? board[row+1] : [] 
-	for ( let i = 0; i < maxDepth; i++) {
-		if ( rowAbove[i] | rowBelow[i] ) {
-			return i;
-		}
-	}	 		
-	return min;
-}
-
-function getSlice(board, row, col = 0) {
-	return board[row].slice(col, col + maxDepth + 1);
-}
 
 function upTrack(board, row, col = 0) {
 	if ( row === 0 ) return '';
@@ -138,7 +121,7 @@ function downTrack(board, row, col = 0) {
 	return str.trim()
 }
 
-function rightTrack(board, row, col = 0) {
+function rightTrack(board, row, col = 0) { 
 	var str = board[row][col];
 	col++;
 	while ( board[row][col] ) { 
@@ -237,7 +220,7 @@ function isFuncPrepend(board, row, col, playedIndices, result) {
 			result.min = playedIndices[i] - col;
 			result.func = 'prepend';
 			result.restrictedEndLetters = checkLegal(board, row, col);
-			result.extra = rightTrack(playedIndices[i]);
+			result.extra = rightTrack(board, row, (Number(col) + result.min - 1));
 			break; 
 		}
 	}
@@ -275,20 +258,19 @@ function putArgsInPlace(board, hand){
 	}	
 }
 
-// above (which works) should be identical to:
 
 var testBoard = [
 [" ", " ", " ", " ", "p", "i", " ", "i", "t", "e", " ", " ", " ", "n", " "], //0
 
-[" ", " ", " ", "w", "a", " ", "e", "s", " ", "t", " ", " ", " ", "o", " "], //1
+[" ", " ", " ", "w", "a", " ", "e", "s", " ", "t", " ", "b", " ", "o", " "], //1
 
 [" ", " ", " ", "i", " ", " ", "e", " ", " ", " ", "a", "l", "m", "s", " "], //2
 
-[" ", " ", " ", "n", " ", " ", "l", " ", " ", "a", "w", " ", " ", "e", " "], //3
+[" ", " ", " ", "n", " ", " ", "l", " ", " ", "a", "w", "e", " ", "e", " "], //3
 
-[" ", " ", " ", "g", "o", " ", " ", "f", "i", "r", "e", " ", " ", "y", " "], //4
+[" ", " ", " ", "g", "o", " ", " ", "f", "i", "r", "e", "s", " ", "y", " "], //4
 
-[" ", " ", "e", " ", "w", " ", " ", " ", " ", "m", "a", " ", " ", " ", " "], //5
+[" ", " ", "e", " ", "w", " ", " ", " ", " ", "m", "a", "s", " ", " ", " "], //5
 
 [" ", " ", "a", " ", "l", "a", "y", " ", "p", "e", "r", "i", "l", " ", " "], //6
 
@@ -307,7 +289,7 @@ var testBoard = [
 [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "l", " ", " ", " "], //13
 
 [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "o", "l", "d", " ", " "]].map(z => z.map(x => x.replace(' ', '')))
-
+putArgsInPlace(testBoard, hand);
 
 
 // function getMinimumLength(col, neighborProfile) {
