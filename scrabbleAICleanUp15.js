@@ -63,7 +63,7 @@ function queryTree(tree, remaining, Treehash) {
     const memoizer = [];
   for ( let c of remaining ) {
     if (memoizer.includes(c)) continue;
-    else memoizer.push(c);
+    else memoizer.push(c); 
     if (tree[c]) {
       queryTree(tree[c], excise(c, remaining), Treehash)
     }
@@ -170,6 +170,7 @@ var neighborProfile = {};
 var playedLettersProfile = {};
 var legalLettersProfile = {};
 var unoccupiedSpaces = {};
+var playableWords = {};
 function getLegalLetters(board, hand) {
 	hand = [...hand];
 	for ( var row = 0; row < 15; row++ ) {
@@ -202,11 +203,14 @@ function getLegalLetters(board, hand) {
 function checkLegal(board, row, col) {
 	return legalLettersProfile[row] ? legalLettersProfile[row][col] : null
 }
+
+
+function neighbor(){};
 function isFuncNeighbor(board, row, col, neighborIndices, result) {
 	for ( let i = 0; i < neighborIndices.length; i++ ) {
 		if ( neighborIndices[i] >= col ) {
 			result.min = neighborIndices[i] - col + 1; 
-			result.func = 'neighbor';
+			result.func = neighbor;
 			result.restrictedEndLetters = checkLegal(board, row, col);
 			result.extra = null
 			break;
@@ -214,11 +218,13 @@ function isFuncNeighbor(board, row, col, neighborIndices, result) {
 	}
 	return result;
 }
+
+function prepend(){}
 function isFuncPrepend(board, row, col, playedIndices, result) {
 	for ( let i = 0; i < playedIndices.length; i++ ) {
 		if ( playedIndices[i] > col && playedIndices[i] < result.min) {
 			result.min = playedIndices[i] - col;
-			result.func = 'prepend';
+			result.func = prepend;
 			result.restrictedEndLetters = checkLegal(board, row, col);
 			result.extra = rightTrack(board, row, (Number(col) + result.min - 1));
 			break; 
@@ -226,17 +232,26 @@ function isFuncPrepend(board, row, col, playedIndices, result) {
 	}
 	return result;
 }
+
+function append(board, row, col, min, restrictedLetters, extra){
+	let roots = [];
+	for ( let c of restrictedLetters ) {
+		let tree = getTree(extra, c);
+		if ( tree ) {
+			roots.push({tree, remaining: excise(c, hand)})
+		}
+	}
+	while (roots.length) {
+		step(board, row, col, roots)
+	}
+}
 function isFuncAppend(board, row, col){
-	if ( board[row][col-1] ) {
-		return {
+	return board[row][col-1] ? {
 			min: 1, 
-			func: 'append', 
+			func: append, 
 			restrictedEndLetters: checkLegal(board, row, col), 
 			extra: leftTrack(board, row, col)
-		}
-	} else {
-		return null;
-	}
+		} : null;
 }
 function getMinLengthAndFunctionType(board, row, col) {
 	var result = isFuncAppend(board, row, col) || {min: 16, func: null};
@@ -249,16 +264,23 @@ function getMinLengthAndFunctionType(board, row, col) {
 	return result;
 }  
 
-	function putArgsInPlace(board, hand){
-		getLegalLetters(board, hand);
-		for ( var row in unoccupiedSpaces ) {
-			for ( var col in unoccupiedSpaces[row] ) {
-				unoccupiedSpaces[row][col] = getMinLengthAndFunctionType(board, row, col);
-				console.log(`test: ${JSON.stringify(unoccupiedSpaces[row][col])}`);
-			}
-		}	
-	}
+function putArgsInPlace(board, hand){
+	getLegalLetters(board, hand);
+	for ( var row in unoccupiedSpaces ) {
+		for ( var col in unoccupiedSpaces[row] ) {
+			unoccupiedSpaces[row][col] = getMinLengthAndFunctionType(board, row, col);
+			parseAndSave(board, row, col)
+		}
+	}	
+}
 
+function parseAndSave(board, row, col){
+	let {min, func, restrictedEndLetters, extra} = unoccupiedSpaces[row][col];
+	func(board, row, col, min, restrictedLetters, extra)
+	console.log(`min: ${min},
+		func: ${func},
+		restrictedEndLetters: ${restrictedEndLetters}`)
+}
 
 var testBoard = [
 [" ", " ", " ", " ", "p", "i", " ", "i", "t", "e", " ", " ", " ", "n", " "], //0
