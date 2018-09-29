@@ -194,7 +194,7 @@ function getLegalLetters(board, hand) {
 						return nodeOrNull && nodeOrNull.value;
 					})
 				} else {
-					rowProfile[col] = hand;
+					rowProfile[col] = hand;  
 				}
 			}
 		}
@@ -202,7 +202,7 @@ function getLegalLetters(board, hand) {
 	}
 }
 function checkLegal(board, row, col) {
-	return legalLettersProfile[row] ? legalLettersProfile[row][col] : hand;
+	return legalLettersProfile[row] ? legalLettersProfile[row][col] : hand
 }
 
 
@@ -220,7 +220,7 @@ function isFuncNeighbor(board, row, col, neighborIndices, result) {
 }
 //make sure that it is called "neighbor" if it is both neighbor() and prepend();
 
-function isFuncPrepend(board, row, col, playedIndices, result) {
+function isFuncPrepend(board, row, col, playedIndices, result ) {
 	for ( let i = 0; i < playedIndices.length; i++ ) {
 		if ( playedIndices[i] > col && playedIndices[i] < result.min) {
 			result.min = playedIndices[i] - col;
@@ -255,14 +255,11 @@ function getMinLengthAndFunctionType(board, row, col) {
 
 function putArgsInPlace(board, hand){
 	getLegalLetters(board, hand);
-	var row = 0;
-	var col = 0;
 	for ( var row in unoccupiedSpaces ) {
 		for ( var col in unoccupiedSpaces[row] ) {
 				let dataBlob = getMinLengthAndFunctionType(board, row, col);
 				unoccupiedSpaces[row][col] = dataBlob;
-				parseThree(board, row, col, dataBlob)
-			
+				parseThree(board, row, col, dataBlob)	
 		}
 	}	
 }
@@ -274,7 +271,7 @@ function parseThree(board, row, col, blob) {
 	//console.log(`func: ${func}`)
 
 	if ( func === 'append' ) {
-		console.log(`restrict: ${restrictedEndLetters}`)
+
 		for ( let c of restrictedEndLetters ) {
 			let tree = takePaths(extra, c);
 			console.log('treeisTrue excise ' + excise(c, hand) + ' treeTruthy?: ' + !!tree);
