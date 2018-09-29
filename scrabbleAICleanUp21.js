@@ -312,11 +312,7 @@ function step(board, row, col, min) {
 		}, [])
 		var words = roots.filter(rt => rt.tree.value).map(rt => rt.tree.value)
 		scoreMe = [...scoreMe, ...words];
-	} else {
-		var words = roots.filter(rt => rt.tree.value).map(rt => rt.tree.value)
-		scoreMe = [...scoreMe, ...words];
-	}  
-	if (nextSpace < 15) {
+	} else if (nextSpace < 15) {
 		roots.forEach(rt => {
 			let legals = legalLettersProfile[row][col];
 			for ( let c of rt.remaining ) {
@@ -361,8 +357,8 @@ var testBoard = [
 
 [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "o", "l", "d", " ", " "]].map(z => z.map(x => x.replace(' ', '')))
 putArgsInPlace(testBoard, hand);	
-
-
+console.log(`boardData00: ${boardData[0][0]}`)
+console.log(`boardData03: ${boardData[0][3]}`)
 // function getMinimumLength(col, neighborProfile) {
 // 	var neighborIndices = Object.keys(neighborProfile).sort();
 // 	for ( let idx of neighborIndices ) {
