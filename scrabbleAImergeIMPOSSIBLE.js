@@ -57,9 +57,6 @@ function lastLetterBucket(hand) {
 function queryTree(tree, remaining, Treehash) {
   var last = tree.path[tree.path.length-1]
   Treehash[tree.depth][last].push('hey');
-  console.log('a: ' + JSON.stringify(Treehash[tree.depth].a))
-  console.log('b: ' + Treehash[tree.depth].b)
-  console.log('c: ' +Treehash[tree.depth].c)
   //Treehash[tree.depth][last].push({path: tree.path, remaining}); 
   if (remaining.length === 0) return;
     const memoizer = [];

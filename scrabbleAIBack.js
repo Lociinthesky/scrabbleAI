@@ -5,22 +5,27 @@ var dictABC = ['aa','aah','aahed','aahing','aahs','aal','aalii','aaliis','aals',
 var alphabet = 'abcdefghijklmnopqrstuvwxyz';
 var maxDepth = 8;
 var n = 15;
-var hand = 'abcdesg';
+var hand = 'abcders';
 var emptyRow = Array(15).fill(' ')
 var emptyBoard = Array(15).fill(emptyRow).map(r => r.slice())
 var emptyBoardData = Array(15).fill(emptyRow).map(r => r = {})
 var requiredLetters = Array(15).fill(emptyRow).map(r => r = []);
-
+var neighborProfile = {};
+var playedLettersProfile = {};
+var legalLettersProfile = {};
+var unoccupiedSpaces = {};
+var playableWords = {};
+var rootCheck = [];
 function boardDataConstructor() {
 	var board = [];
 	var row = [];
 	for ( var i = 0; i < 15; i++ ) {
-		board.push([].slice());
-		for ( var j = 0; j < 15; j++ ) {
-			board[i].push(Object.assign({}));
-			board[i].scoreMe = [];
-			board[i].restricted = {};
-		}	
+	    board.push([].slice());
+	    for ( var j = 0; j < 15; j++ ) {
+	        board[i].push(Object.assign({}));
+	        board[i].scoreMe = [];
+	        board[i].restricted = {};
+	    }	
 	}
 	return board;
 }
@@ -52,7 +57,7 @@ function excise(char, arr) {
 function lastLetterBucket(hand) {
 	var proto = {};
 	for ( let char of hand ) {
-		proto[char] = [];
+	    proto[char] = [];
 	}
 	return proto;
 }
@@ -73,7 +78,7 @@ function queryTree(tree, remaining, Treehash) {
 function buildHashes(tree, hand) {
   var Treehash = [];
   for ( var i = 0; i <= maxDepth+1; i++ ) {
-  		Treehash[i] = [];
+  	Treehash[i] = [];
   }         
   hand = [...hand]; 
   queryTree(tree, hand, Treehash)
@@ -83,250 +88,300 @@ function buildHashes(tree, hand) {
 function zz(Treehash, hand) {
 	var newArr = [];
 	for ( var i = 0; i < Treehash.length; i++ ) {
-	var obj = {}
-		if (Array.isArray(Treehash[i])) {
-			for ( let c of hand ) {
-				obj[c] = Treehash[i].filter(x => x.tree.last === c);
-			}
-		}
-		newArr[i] = obj;
+	    var obj = {}
+	    if (Array.isArray(Treehash[i])) {
+	        for ( let c of hand ) {
+	            obj[c] = Treehash[i].filter(x => x.tree.last === c);
+	        }
+	    }
+	    newArr[i] = obj;
 	}
 	return newArr;
 }
-								var Dictree = new DictionaryTree('', dict)
-								var Treehash = buildHashes(Dictree, hand, 8)
-								var byLetter = zz(Treehash, hand);
-
-
-
+	var Dictree = new DictionaryTree('', dict)
+	var DictreeABC = new DictionaryTree('', dictABC)
+	var Treehash = buildHashes(Dictree, hand)
+	var byLetter = zz(Treehash, hand);
+Treehash.copy = function(num) {
+	let newArr = Treehash[min].map(x => x.slice())
+}
 function upTrack(board, row, col = 0) {
 	if ( row === 0 ) return '';
 	var str = board[row][col];
 	row--;
 	while ( board[row] && board[row][col] ) {
-		str = board[row][col] + str;  
-		row--;
+	    str = board[row][col] + str;  
+	    row--;
 	}
 	return str.trim()
 }
-
 function downTrack(board, row, col = 0) {
 	if (row === 14) return '';
 	var str = board[row][col];
-			row++
+	row++
 	while ( board[row] && board[row][col] ) {
-		str += board[row][col];
-		row++;
+	    str += board[row][col];
+	    row++;
 	}
 	return str.trim()
 }
-
 function rightTrack(board, row, col = 0) { 
 	var str = board[row][col];
 	col++;
-	while ( board[row][col] ) { 
-		str += board[row][col];  
-		col++;
+	while ( board[row] && board[row][col] ) { 
+	    str += board[row][col];  
+	    col++;
 	}
 	return str.trim()
 }
-
-function leftTrack(board, row, col = 0) {
+function leftTrack(board, row, col = 0) { 
 	var str = board[row][col];
 	col--;
-	while ( board[row][col] ) { 
-		str = board[row][col] + str;  
-		col--;
+	while ( board[row] && board[row][col] ) { 
+	    str = board[row][col] + str;  
+	    col--;
 	}
 	return str.trim()
 }
-//What will NEVER change is the fact that there is an occupied space above or below a given space
 function takePaths(...substrings) {
   var node = Dictree;
   for ( let str of substrings ) {
-		for ( let c of str ) {
-			if ( node[c]) {
+	for ( let c of str ) {
+	    if ( node[c]) {
                node = node[c]
             } else {
                return null;
             }
-		}  
-	}
+        }
+    }  
   return node;
 }
-
-
 function getTree(path, startingNode = Dictree){
 	path = [...path];
 	var node = startingNode;
 	for ( var c of path ) {
-		if ( node[c] === undefined ) return null;
-		node = node[c]
+	    if ( node[c] === undefined ) return null;
+	    node = node[c]
 	}
 	return node;
 }
-
-var neighborProfile = {};
-var playedLettersProfile = {};
-var legalLettersProfile = {};
-var unoccupiedSpaces = {};
-var playableWords = {};
 function getLegalLetters(board, hand) {
 	hand = [...hand];
 	for ( var row = 0; row < 15; row++ ) {
-		neighborProfile[row] = [];
-		playedLettersProfile[row] = [];
-		unoccupiedSpaces[row] = {};
-		let rowProfile = {}
-		let above = (row === 0 ) ? [] : board[row - 1]
-		let below = (row === 14) ? [] : board[row + 1]	 
-		for ( let col = 0; col < 15; col++ ) {
-			if (board[row][col]) {
-				playedLettersProfile[row].push(col);
-				continue;
-			} else {
-				unoccupiedSpaces[row][col] = true;
-				if (above[col] || below[col]) { 
-					neighborProfile[row].push(col);
-					rowProfile[col] = hand.filter(char => {
-						var nodeOrNull = takePaths(upTrack(board, row, col), char, downTrack(board, row, col))
-						return nodeOrNull && nodeOrNull.value;
-					})
-				} else {
-					rowProfile[col] = hand;
-				}
-			}
-		}
-		legalLettersProfile[row] = rowProfile;
+	    neighborProfile[row] = [];
+	    playedLettersProfile[row] = [];
+	    unoccupiedSpaces[row] = {};
+	    let rowProfile = {}
+	    let above = (row === 0 ) ? [] : board[row - 1]
+	    let below = (row === 14) ? [] : board[row + 1]	 
+	    for ( let col = 0; col < 15; col++ ) {
+	        if (board[row][col]) {
+	            playedLettersProfile[row].push(col);
+	            continue;
+	        } else {
+	            unoccupiedSpaces[row][col] = true;
+	            if (above[col] || below[col]) { 
+	                neighborProfile[row].push(col);
+	                rowProfile[col] = hand.filter(char => {
+	                    var nodeOrNull = takePaths(upTrack(board, row, col), char, downTrack(board, row, col))
+	                    return nodeOrNull && nodeOrNull.value;
+	                })
+	            } else {
+	                rowProfile[col] = hand;  
+	            }
+	        }
+	    }
+	legalLettersProfile[row] = rowProfile;
 	}
 }
 function checkLegal(board, row, col) {
-	return legalLettersProfile[row] ? legalLettersProfile[row][col] : null
+	return legalLettersProfile[row] ? legalLettersProfile[row][col] : hand
 }
-
-
-// function neighbor(board, row, col, min, restrictedLetters, extra){
-// 	let roots = [];
-// 	for ( let c of restrictedLetters ) {
-// 		roots.concat(byLetter[min][c]);
-// 	}
-// 	while ( roots.length ) {
-// 		step(board, row, col, roots);
-// 		roots.shift();
-// 	}
-// };
-
-// function prepend(board, row, col, min, restrictedLetters, extra){
-// 	let roots = Treehash[min].filter(obj => getTree(obj.tree, extra))
-// 		.map(x => x.tree = getTree(x.tree, extra));
-// 	while ( roots.length ) {
-// 		step(board, row, col, roots)
-// 		roots.shift();
-// 	}
-// }
-
-// function append(board, row, col, min, restrictedLetters, extra){
-// 	let roots = [];
-// 	for ( let c of restrictedLetters ) {
-// 		let tree = getTree(extra, c);
-// 		if ( tree ) {
-// 			roots.push({tree, remaining: excise(c, hand)})
-// 		}
-// 	}
-// 	while (roots.length) {
-// 		step(board, row, col, roots)
-// 		roots.shift();
-// 	}
-// }
 function isFuncNeighbor(board, row, col, neighborIndices, result) {
 	for ( let i = 0; i < neighborIndices.length; i++ ) {
-		if ( neighborIndices[i] >= col ) {
-			result.min = neighborIndices[i] - col + 1; 
-			result.func = 'neighbor';
-			result.restrictedEndLetters = checkLegal(board, row, col);
-			result.extra = null
-			break;
-		} 
+	    if ( neighborIndices[i] >= col ) {
+	       result.min = neighborIndices[i] - col + 1; 
+	       result.func = 'neighbor';
+	       result.restrictedEndLetters = checkLegal(board, row, col);
+	       result.extra = null
+	       break;
+	    } 
 	}
 	return result;
 }
-//make sure that it is called "neighbor" if it is both neighbor() and prepend();
-
-function isFuncPrepend(board, row, col, playedIndices, result) {
+function isFuncPrepend(board, row, col, playedIndices, result ) {
+	// console.log(`rc: ${row} ${col} line 213,
+	// 	playedIndices: ${playedIndices}`)
 	for ( let i = 0; i < playedIndices.length; i++ ) {
-		if ( playedIndices[i] > col && playedIndices[i] < result.min) {
-			result.min = playedIndices[i] - col;
-			result.func = 'prepend';
-			result.restrictedEndLetters = checkLegal(board, row, col);
-			result.extra = rightTrack(board, row, (Number(col) + result.min - 1));
-			break; 
-		}
+	    if ( playedIndices[i] > col && playedIndices[i] < result.min) {
+	      result.min = playedIndices[i] - col;
+	      result.func = 'prepend';
+	      result.restrictedEndLetters = checkLegal(board, row, col);
+	      result.extra = rightTrack(board, row, (Number(col) + result.min - 1));
+	      break; 
+	    }
 	}
 	return result;
 }
-
-
-function isFuncAppend(board, row, col){
+function isFuncAppend(board, row, col, result){
 	return board[row][col-1] ? {
-			min: 1, 
-			func: 'append', 
-			restrictedEndLetters: checkLegal(board, row, col), 
-			extra: leftTrack(board, row, col)
-		} : null;
+	    min: 1, 
+	    func: 'append', 
+	    restrictedEndLetters: checkLegal(board, row, col), 
+	    extra: leftTrack(board, row, col)
+	} : null;
 }
 function getMinLengthAndFunctionType(board, row, col) {
-	var result = isFuncAppend(board, row, col) || {min: 16, func: null};
+	var result = isFuncAppend(board, row, col) || {min: 0, func: null};
 	if ( result.func ) return result;
 	result = isFuncNeighbor(board, row, col, neighborProfile[row], result);
 	result = isFuncPrepend(board, row, col, playedLettersProfile[row], result);
-	if ( result.min < 8 ) {
-		result.restrictedEndLetters = legalLettersProfile[row][Number(col) + result.min - 1]
+	if ( result.min && result.min < 8 ) {
+    	result.restrictedEndLetters = legalLettersProfile[row][Number(col) + result.min - 1]
 	}
 	return result;
 }  
-
+var count = 0;
 function putArgsInPlace(board, hand){
 	getLegalLetters(board, hand);
 	for ( var row in unoccupiedSpaces ) {
-		for ( var col in unoccupiedSpaces[row] ) {
-			let dataBlob = getMinLengthAndFunctionType(board, row, col);
-			unoccupiedSpaces[row][col] = dataBlob;
-			parseThree(board, row, col, dataBlob)
-		}
+	    for ( var col in unoccupiedSpaces[row] ) {
+	        let dataBlob = getMinLengthAndFunctionType(board, row, col);
+	        unoccupiedSpaces[row][col] = dataBlob;
+	        parseThree(board, row, col, dataBlob)
+	    } 
 	}	
 }
+// function putArgsInPlaceForTesting(board, hand){
 
-function parseThree(board, row, col, blob) {
-	let {min, restrictedEndLetters, extra, func} = blob
-	let roots = [];
-	if ( func === 'append' ) {
-		for ( let c of restrictedEndLetters ) {
-			let tree = getTree(extra, c);
-			if ( tree ) roots.push({tree, remaining: excise(c, hand)})		
-		}
-	} else if ( func === 'prepend' ) {
-		roots = Treehash[min].filter(obj => getTree(obj.tree, extra))
-			.map(x => x.tree = getTree(x.tree, extra));
-	} else if ( func === 'neighbor' ) {
-		for ( let c of restrictedEndLetters ) {
-			roots = roots.concat(byLetter[min][c]);
-		}
-	}
-	while (roots.length) {
-		step(board, row, col, roots)
-		roots.shift();
-	}
-
-}
-// function parseAndSave(board, row, col){
-// 	let {min, func, restrictedEndLetters, extra} = unoccupiedSpaces[row][col];
-// 	func(board, row, col, min, restrictedEndLetters, extra)
+//     getLegalLetters(board, hand);
+// 	for ( var row in unoccupiedSpaces ) {
+// 	    for ( var col in unoccupiedSpaces[row] ) {
+// 	        let dataBlob = getMinLengthAndFunctionType(board, row, col);
+// 	        unoccupiedSpaces[row][col] = dataBlob;
+// 	        parseThree(board, row, col, dataBlob)
+// 	    } 
+// 	}	
 // }
-
-function step(board, row, col, roots) {
-	console.log('number of roots: ' + roots.length);
+var scoreMe = []; 
+var counter = 0;
+var roots = []
+function parseThree(board, row, col, blob) {
+    // console.log(`row: ${row}
+    // col: ${col}
+    // blob: ${JSON.stringify(blob)}`)
+	let {min, restrictedEndLetters, extra, func} = blob
+	min = blob.min;
+	roots = [];
+	if ( func === 'append' ) { 
+	    for ( let c of restrictedEndLetters ) {
+	        let tree = takePaths(extra, c);
+	        if ( tree ) roots.push({tree, remaining: excise(c, hand)})	
+        }
+	} else if ( func === 'prepend' ) {
+	    roots = Treehash[min].filter(obj => {
+	        return getTree(obj.tree.path, extra)
+	    })
+	    roots = roots.map(x => getTree(x.tree, extra));
+	} else if ( func === 'neighbor' ) {
+	    for ( let c of restrictedEndLetters ) {
+            // for ( var key in byLetterMin ) {
+            //     console.log(`row: ${row},
+            //     col: ${col},
+            //     min: ${min},
+            //     c: ${c},
+            //     key: ${key}
+            //     byLetter[min][c]: ${byLetter[min][c] && byLetter[min][c].path}`)
+            // }
+     
+	        if (byLetter[min] && byLetter[min][c]){
+	            roots = roots.concat(byLetter[min][c]);
+            }
+     
+	    } 
+    }
+    // var logger = roots.map(x => JSON.stringify({path: x.tree.path, remaining: x.remaining}));
+    // var wordsFrom = getWordsFrom(roots);
+    //  console.log(root paths: ${logger})
+    //  console.log(wordsFrom: ${getWordsFrom(roots)})
+	while (roots.length) {
+	    roots = step(board, row, col, min)
+	}  
+	boardData[row][col] = scoreMe;
+	scoreMe = []; 
+}
+  
+function checkNextSpace(board, row, col, roots) {
+	let newRoots = roots;
+	// console.log(
+	// 	`rowCol: ${row} ${col} 
+	// 	roots: ${roots},
+	// 	roots[0]: ${roots[0]}
+	// 	strroots[0]: ${JSON.stringify(roots[0])}`)
+	var nextSpace = Number(col) + roots[0].tree.depth;
+	if ( board[row][nextSpace] ) {
+	    let toAppend = rightTrack(board, row, nextSpace);
+	    newRoots = roots.reduce((acc, val) => {
+	        var n = takePaths(val.tree.path, toAppend)
+	        return n ? [...acc, ...[val]] : acc;
+	    }, []);
+	    nextSpace += toAppend.length; 
+	}
+	return [newRoots, nextSpace];
+}
+function getWordsFrom(roots) {
+	return roots.reduce((acc, rootObj) => {
+	    let word = rootObj.tree.value;
+	    if (word) acc.push(word);
+	    return acc;
+	}, []);
+} 
+function diffLegal(board, row, col, remaining) {
+	let newRemains = [];
+	let legals = legalLettersProfile[row][col];
+	return legals ? [...remaining].filter(x => legals.includes(x)) : remaining;
+} 
+function step(board, row, col, min) {
+    var [newRoots, nextSpace] = checkNextSpace(board, row, col, roots);  
+    var logger = newRoots.map(x => x.tree.path)
+	console.log(`row: ${row},
+	col: ${col},
+	min: ${min},
+    newRoots: ${newRoots},
+    logger: ${logger}
+	nr[0]: not now,
+	nextSpace: ${nextSpace}`)
+	scoreMe = scoreMe.concat(getWordsFrom(newRoots));
+	console.log(scoreME: ${scoreMe})
+	roots = nextSpace > 14 ? [] :
+	newRoots.reduce((acc, rootObj) => {
+	  	legalRemains = diffLegal(board, row, nextSpace, rootObj.remaining);
+	    for ( let c of legalRemains ) {
+	      let maybeTree = rootObj.tree[c];
+          if ( maybeTree) {
+	        acc.push( {tree: maybeTree, remaining: excise(c, rootObj.remaining)} )
+	      }
+	    }
+	    return acc;
+	}, [])
+	return roots;
 }
 
+function resetAndTest(board, hand, ABConly = false) {
+	var Treehash = ABConly ? 
+	buildHashes(Dictree, hand) :
+	buildHashes(DictreeABC, hand);
+	var byLetter = zz(Treehash, hand);
+	roots = [];
+	neighborProfile = {};
+    playedLettersProfile = {};
+    legalLettersProfile = {}; 
+    unoccupiedSpaces = {};
+    playableWords = {};
+    rootCheck = [];
+    count = 0;
+    putArgsInPlace(board, hand);
+}
 var testBoard = [
 [" ", " ", " ", " ", "p", "i", " ", "i", "t", "e", " ", " ", " ", "n", " "], //0
 
@@ -357,71 +412,7 @@ var testBoard = [
 [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "l", " ", " ", " "], //13
 
 [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "o", "l", "d", " ", " "]].map(z => z.map(x => x.replace(' ', '')))
-putArgsInPlace(testBoard, hand);
-
-
-// function getMinimumLength(col, neighborProfile) {
-// 	var neighborIndices = Object.keys(neighborProfile).sort();
-// 	for ( let idx of neighborIndices ) {
-// 		if ( idx >= col ) return idx - col + 1
-// 	} 
-// 	return 0
-// }
-
-// //UNTESTED 
-// function getRootsFromTreehash(minLength, legalChars) {  
-// 	//this applies IF AND ONLY IF legalChars exists at all.
-// 	var roots = [];
-// 	for ( let c in legalChars ) {
-// 		roots.concat(Treehash[minLength][c]);
-// 	}
-// 	return roots;
-// }
-// var minLength = getMinimumLength(col, neighborIndices);
-// var legalChars = getLegalChars(board, row, col, hand)
-// var roots = getRootsFromTreehash(minLength, legalChars);    
-// //------------------------------------------------------------------------------------------------
-// function stepForward(board, row, col, roots, minLength) {
-// 	//step forward by one, adding (each) single letter of "remaining" to each root
-// 	var nextIndex = col + minLength;
-// 	//if board[row][nextIndex] is neighbored, filter roots accordingly (while saving words)
-// 	//finally, return [roots, wordsAtStep]
-// }
-// //UNTESTED
-// function collectAllViableWords(board, row, col, roots, minLength) {
-// 	var viableWords = [];
-// 	var wordToAppend = '';
-// 	var nextIndex = col + minLength;
-// 	while (roots.length) {
-// 		if ( board[row][nextIndex] === '' ) {
-// 			[roots, wordsAtStep] = stepForward(roots)
-// 			viableWords.concat(wordsAtStep);
-// 			nextIndex++;
-// 		} else {
-// 			wordToAppend = forwardTrack(board, row, nextIndex);
-// 			nextIndex += wordToAppend.length
-// 			[roots, wordsAtStep] = appendRoots(roots, wordToAppend);
-// 			viableWords.concat(wordsAtStep);	
-// 		}
-// 	}
-// 	return viableWords;
-// }
-
-//LOG DATA TO TAKE A LOOK AT WHAT IM DOING, THIS IMPLEMENTATION WILL WORK
-//LOG DATA TO TAKE A LOOK AT WHAT IM DOING, THIS IMPLEMENTATION WILL WORK
-//LOG DATA TO TAKE A LOOK AT WHAT IM DOING, THIS IMPLEMENTATION WILL WORK
-//LOG DATA TO TAKE A LOOK AT WHAT IM DOING, THIS IMPLEMENTATION WILL WORK
-//LOG DATA TO TAKE A LOOK AT WHAT IM DOING, THIS IMPLEMENTATION WILL WORK
-
-//At the beginning of each row, we get its data - 
-//most importantly, the indices of played words (and those words)
-//and the indices of neighbors.
-//starting at col 0, we see what is nearer -- a neighbor, or a played letter?
-//depending which, we apply slightly different implementations. 
-//in either case, we iterate up toward it _inside of its implementation function
-//afterward, we boost the value of column up several spaces at once,
-//since they have already been iterated through.
-//ONE CURRENT PROBLEM:
-//if the played letter and neighbor are far to the right, more than 8 spaces,
-//I have not handled those eventualities yet
-
+resetAndTest(testBoard, hand);
+// putArgsInPlaceForTesting(testBoard, hand);	
+console.log(`boardData00: ${boardData[0][0]}`)
+console.log(`boardData03: ${boardData[0][3]}`)
