@@ -100,11 +100,25 @@ function zz(Treehash, hand) {
 }
 	var Dictree = new DictionaryTree('', dict)
 	var DictreeABC = new DictionaryTree('', dictABC)
-	var Treehash = buildHashes(Dictree, hand)
-	var byLetter = zz(Treehash, hand);
-Treehash.copy = function(num) {
-	let newArr = Treehash[min].map(x => x.slice())
-}
+	var Treehash;
+	// = buildHashes(Dictree, hand)
+	var byLetter;
+	// = zz(Treehash, hand);
+// Treehash.copy = function(num) {
+// 	let newArr = Treehash[min].map(x => x.slice())
+// }
+
+// var TM = new Map().set(
+//     'up',(b,r,c,s)=>[b[r][c]+s,r--,c]).set(
+//     'down',(b,r,c,s)=>[s+b[r][c],r++,c]).set(
+//     'left',(b,r,c,s)=>[b[r][c]+s,r,c--]).set(
+//     'right',(b,r,c,s)=>[s+b[r][c],r,c++])
+// function track(board, row, col, dir, str = '') {
+//     while ( board[row] && board[row][col] ) {
+//         [str, row, col] = TM.get(dir)(board, row, col, str)
+//     }
+//     return str.trim()
+// }
 function upTrack(board, row, col = 0) {
 	if ( row === 0 ) return '';
 	var str = board[row][col];
@@ -252,17 +266,6 @@ function putArgsInPlace(board, hand){
 	    } 
 	}	
 }
-// function putArgsInPlaceForTesting(board, hand){
-
-//     getLegalLetters(board, hand);
-// 	for ( var row in unoccupiedSpaces ) {
-// 	    for ( var col in unoccupiedSpaces[row] ) {
-// 	        let dataBlob = getMinLengthAndFunctionType(board, row, col);
-// 	        unoccupiedSpaces[row][col] = dataBlob;
-// 	        parseThree(board, row, col, dataBlob)
-// 	    } 
-// 	}	
-// }
 var scoreMe = []; 
 var counter = 0;
 var roots = []
@@ -352,7 +355,7 @@ function step(board, row, col, min) {
 	nr[0]: not now,
 	nextSpace: ${nextSpace}`)
 	scoreMe = scoreMe.concat(getWordsFrom(newRoots));
-	console.log(scoreME: ${scoreMe})
+	console.log(`scoreME: ${scoreMe}`)
 	roots = nextSpace > 14 ? [] :
 	newRoots.reduce((acc, rootObj) => {
 	  	legalRemains = diffLegal(board, row, nextSpace, rootObj.remaining);
@@ -412,7 +415,10 @@ var testBoard = [
 [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "l", " ", " ", " "], //13
 
 [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "o", "l", "d", " ", " "]].map(z => z.map(x => x.replace(' ', '')))
+// resetAndTest(testBoard, hand);
 resetAndTest(testBoard, hand);
+
+//breakpoints, set as scrabbleAIsafeStart
 // putArgsInPlaceForTesting(testBoard, hand);	
 console.log(`boardData00: ${boardData[0][0]}`)
 console.log(`boardData03: ${boardData[0][3]}`)
